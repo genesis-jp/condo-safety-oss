@@ -32,12 +32,14 @@ Try the system right now in your browser! You can switch between **English** and
 
 1. **100% Free & Serverless ($0/month)**
    - Runs entirely on a single shared Google Account (`@gmail.com`) belonging to your Condo Board or HOA using Google Apps Script, Google Sheets, and Google Drive.
-2. **Instant Bilingual UI (`🌐 English / 日本語`)**
+2. **Privacy by Design: No Personal Data Collected**
+   - Residents sign in with just their unit number and a simple PIN, and the board notifies them by email or LINE when a disaster strikes. Because the system does not collect residents' names, phone numbers, or email addresses, the risk of a personal-data leak is reduced to an absolute minimum.
+3. **Instant Bilingual UI (`🌐 English / 日本語`)**
    - One-click toggle between English and Japanese (or via URL parameter `?lang=en` / `?lang=ja`), covering all status badges, modals, checklists, and CSV exports—ideal for international communities and multicultural buildings.
-3. **Two-Tier Security (Resident PIN + Board Admin 1-to-1 Passkey Auth)**
+4. **Two-Tier Security (Resident PIN + Board Admin 1-to-1 Passkey Auth)**
    - **Residents**: Report safety in 10 seconds from any smartphone using their **Unit Number + 4-digit household PIN**. Sensitive details (injury, trapped, water leak notes) of other households remain masked to protect privacy.
    - **Board / HOA Admins**: Authenticate via Google Sign-In (supporting fingerprint/face Passkeys) with **strict 1-to-1 verification** matching their personal Google email to their assigned unit number. Every admin action is recorded in an immutable audit log.
-4. **Private & Automated Annual Google Drive Organization**
+5. **Private & Automated Annual Google Drive Organization**
    - Automatically creates a structured folder hierarchy (`My Drive > 安否確認システム (Safety System) > 2026年版 (2026 Edition)`) inside the Board's Google Drive to store the database spreadsheet and CSV audit logs. **You do NOT need to share the Google Drive folder publicly with residents.**
 
 ---
