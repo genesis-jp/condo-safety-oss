@@ -1,0 +1,2864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>マンション安否確認システム / Condo Resident Safety Check System</title>
+  <style>
+    :root {
+      --primary-color: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #f0fdfa;
+      --navy-color: #1e3a8a;
+      --color-safe: #10b981;
+      --color-danger: #ef4444;
+      --color-escape: #8b5cf6;
+      --color-pending: #fef9c3;
+      --bg-color: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding-bottom: 3rem;
+    }
+
+    /* ===== Demo Showcase Banner (Shown on GitHub Pages / Standalone Demo) ===== */
+    .demo-showcase-bar {
+      background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%);
+      color: #f8fafc;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .demo-showcase-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .btn-demo-chip {
+      background: rgba(255,255,255,0.14);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 0.28rem 0.65rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-demo-chip:hover {
+      background: rgba(255,255,255,0.28);
+    }
+
+    /* ===== Header ===== */
+    header {
+      background: #1e293b;
+      color: white;
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      flex-wrap: wrap;
+    }
+    .badge-term {
+      background: #334155;
+      color: #e2e8f0;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-weight: 700;
+      border: 1px solid #475569;
+    }
+    .badge-training {
+      background: #d97706;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 800;
+    }
+    .badge-emergency {
+      background: #dc2626;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 800;
+      animation: pulse-badge 2s infinite;
+    }
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .header-user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.86rem;
+      flex-wrap: wrap;
+    }
+    .btn-header {
+      background: #ffffff;
+      color: #1e293b;
+      border: none;
+      padding: 0.42rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-header:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+    .btn-lang-switch {
+      background: #0f766e;
+      color: #ffffff;
+      border: 1px solid #14b8a6;
+      padding: 0.42rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .announcement-banner {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 5px solid #d97706;
+      border-radius: 10px;
+      padding: 0.85rem 1.2rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: #92400e;
+    }
+
+    .dashboard-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .dashboard-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .dashboard-actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 960px) {
+      .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.15rem 1.1rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .stat-card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .stat-card-value {
+      font-size: 1.7rem;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .stat-card-footer {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+    }
+
+    .main-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      padding: 1.4rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+      margin-bottom: 1.5rem;
+    }
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .map-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .filter-tabs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      border: 1px solid var(--border-color);
+      background: white;
+      padding: 0.38rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    .frame-legends {
+      display: flex;
+      gap: 0.85rem;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    .floor-matrix {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .floor-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .floor-label {
+      width: 2.4rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(17, minmax(48px, 1fr));
+      gap: 0.35rem;
+      flex: 1;
+    }
+    .room-cell {
+      border-radius: 8px;
+      padding: 0.38rem 0.15rem;
+      text-align: center;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fde047;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      transition: transform 0.12s, box-shadow 0.12s;
+      position: relative;
+      user-select: none;
+    }
+    .room-cell:hover {
+      transform: scale(1.07);
+      z-index: 5;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+    .room-cell.status-無事 { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .room-cell.status-要支援 { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .room-cell.status-避難中 { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+    .room-cell.has-email { border: 2.5px solid #1e3a8a !important; box-shadow: 0 0 0 1px #1e3a8a !important; }
+    .room-cell.is-admin { border: 3px solid #d97706 !important; box-shadow: 0 0 0 1px #d97706 !important; }
+    .proxy-indicator {
+      font-size: 0.58rem;
+      background: rgba(15, 23, 42, 0.75);
+      color: #ffffff;
+      border-radius: 3px;
+      padding: 0 3px;
+      display: inline-block;
+      margin-top: 1px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 860px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    .btn-action {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .btn-action:hover { background: var(--primary-dark); }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      padding: 0.55rem 0.95rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-print-main {
+      background: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-danger-outline {
+      background: white;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      padding: 0.7rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+    }
+
+    .login-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #f1f5f9;
+      padding: 0.3rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .login-mode-tab {
+      padding: 0.6rem 0.5rem;
+      border: none;
+      background: transparent;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .login-mode-tab.active {
+      background: white;
+      color: var(--primary-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .passkey-box {
+      background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+      border: 1.5px solid #99f6e4;
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: left;
+    }
+    .btn-google-passkey {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .hidden { display: none !important; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 540px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    /* ===== A4 Print / PDF Preview Studio ===== */
+    .preview-modal {
+      background: #334155;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1180px;
+      height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .preview-toolbar {
+      background: #0f172a;
+      color: white;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .preview-stage {
+      flex: 1;
+      overflow: auto;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: #475569;
+    }
+    .a4-sheet {
+      background: white;
+      color: #0f172a;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .a4-sheet.landscape {
+      width: 297mm;
+      min-height: 209mm;
+      max-height: 209mm;
+      padding: 8mm 10mm;
+    }
+    .a4-sheet.portrait {
+      width: 210mm;
+      min-height: 296mm;
+      max-height: 296mm;
+      padding: 9mm 9mm;
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2.5px solid #0f766e;
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+    }
+    .report-title-main { font-size: 15pt; font-weight: 900; color: #0f172a; }
+    .report-meta { text-align: right; font-size: 8pt; color: #334155; line-height: 1.35; }
+    .report-kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .report-kpi-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 8px;
+      background: #f8fafc;
+    }
+    .report-kpi-label { font-size: 7pt; font-weight: 700; color: #475569; }
+    .report-kpi-val { font-size: 13pt; font-weight: 900; color: #0f172a; line-height: 1.15; }
+    .report-kpi-sub { font-size: 6.5pt; color: #64748b; }
+    .report-map-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 8px;
+      margin-bottom: 8px;
+    }
+    .report-map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      font-size: 8.5pt;
+      font-weight: 800;
+    }
+    .report-floor-matrix { display: flex; flex-direction: column; gap: 3px; }
+    .report-floor-row { display: flex; align-items: center; gap: 4px; }
+    .report-floor-lbl { width: 22px; font-size: 7.5pt; font-weight: 900; color: #475569; text-align: center; }
+    .report-rooms-grid { display: grid; grid-template-columns: repeat(17, 1fr); gap: 2.5px; flex: 1; }
+    .report-room-cell {
+      border-radius: 4px;
+      padding: 2px 1px;
+      text-align: center;
+      font-size: 6.5pt;
+      font-weight: 800;
+      border: 1px solid #fde047;
+      background: #fef9c3;
+      color: #854d0e;
+      line-height: 1.15;
+    }
+    .a4-sheet.portrait .report-room-cell { font-size: 5.6pt; padding: 3px 0.5px; }
+    .report-room-cell.status-無事 { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .report-room-cell.status-要支援 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .report-room-cell.status-避難中 { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+    .report-room-cell.has-email { border: 1.5px solid #1e3a8a !important; }
+    .report-room-cell.is-admin { border: 2px solid #d97706 !important; }
+    .report-bottom-split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; flex: 1; }
+    .a4-sheet.portrait .report-bottom-split { grid-template-columns: 1fr; gap: 6px; }
+    .report-panel {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    .report-panel-title {
+      font-size: 8.5pt;
+      font-weight: 800;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 7.2pt; }
+    .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 2.5px 5px; text-align: left; }
+    .report-table th { background: #f1f5f9; font-weight: 800; }
+    .report-footer {
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: #64748b;
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: white !important; padding: 0 !important; margin: 0 !important; }
+      .demo-showcase-bar, header, .container, .preview-toolbar, #roomModal, #passkeyModal, #termModal { display: none !important; }
+      #printPreviewModal { position: static !important; background: white !important; padding: 0 !important; display: block !important; overflow: visible !important; }
+      .preview-modal { background: white !important; box-shadow: none !important; height: auto !important; max-width: none !important; width: 100% !important; }
+      .preview-stage { padding: 0 !important; background: white !important; overflow: visible !important; }
+      .a4-sheet { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-height: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== INTERACTIVE LIVE DEMO BANNER (Auto-hidden on GAS Production) ==================== -->
+  <div id="demoShowcaseBar" class="demo-showcase-bar hidden">
+    <div>
+      <strong id="demoBannerTitle">🎯 ライブデモ環境 (Open Source Edition)</strong>
+      <span id="demoBannerSub" style="opacity:0.88; margin-left:0.4rem;">— インストール不要で全機能（住民回答・管理者パスキー・代行入力・A4出力）をお試しいただけます</span>
+    </div>
+    <div class="demo-showcase-actions">
+      <button type="button" id="btnDemoAdminJump" class="btn-demo-chip">🔐 管理者画面をすぐ体験 (401号室)</button>
+      <button type="button" id="btnDemoResidentJump" class="btn-demo-chip">🏠 住民回答画面を体験 (305号室)</button>
+      <button type="button" id="btnDemoSampleLoad" class="btn-demo-chip">🧪 サンプル訓練データ投入</button>
+      <button type="button" id="btnDemoPrintJump" class="btn-demo-chip">🖨️ A4記録シート出力</button>
+    </div>
+  </div>
+
+  <!-- ==================== HEADER ==================== -->
+  <header>
+    <div class="header-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span id="headerAppTitle">サンプルレジデンス 安否確認</span>
+      <span id="termBadge" class="badge-term">2026年度 (第12期)</span>
+      <span id="trainingBadge" class="badge-training">訓練モード</span>
+    </div>
+    <div class="header-user-info">
+      <button type="button" id="btnLangToggle" class="btn-lang-switch" title="Switch Language / 言語切替">🌐 English</button>
+      <span id="onlineStatusLabel" style="color: #10b981; font-weight: 700;">● オンライン稼働中</span>
+      <span id="userHeaderLabel">未ログイン</span>
+      <button id="btnSwitchView" class="btn-header hidden">管理画面へ</button>
+      <button id="btnResidentPublicMap" class="btn-header hidden" style="background:#e0f2fe; color:#0369a1;">🗺️ 全体安否マップ(閲覧)</button>
+      <button id="btnLogout" class="btn-header hidden" style="background: #ef4444; color: white;">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ==================== 1. LOGIN VIEW ==================== -->
+    <div id="loginView" class="main-card" style="max-width: 490px; margin: 2.2rem auto; text-align: center;">
+      <div style="margin-bottom: 1rem;">
+        <span id="loginBadgeOrg" style="background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; font-size:0.78rem; font-weight:800; padding:0.2rem 0.65rem; border-radius:99px;">
+          🏢 サンプルレジデンス 管理組合【2026年度版】
+        </span>
+        <h2 id="loginMainTitle" style="color: #0f766e; margin-top: 0.6rem; font-size: 1.45rem;">マンション安否確認システム</h2>
+        <p id="loginSubTitle" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+          災害時・防災訓練時の世帯安否報告および本部集計システム
+        </p>
+      </div>
+
+      <div class="login-mode-tabs">
+        <button type="button" id="tabResidentLogin" class="login-mode-tab active">🏠 一般世帯ログイン</button>
+        <button type="button" id="tabAdminLogin" class="login-mode-tab">🔐 理事・管理者 (パスキー)</button>
+      </div>
+
+      <!-- A. 一般世帯ログインフォーム -->
+      <div id="residentLoginPane">
+        <form id="loginForm">
+          <div style="text-align: left; margin-bottom: 1rem;">
+            <label id="lblInputRoom" style="font-size: 0.85rem; font-weight: bold;">部屋番号 (全97戸: 101〜708)</label>
+            <input type="text" id="inputRoom" placeholder="例: 305, 515" required style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.3rem; font-size: 0.95rem;">
+          </div>
+          <div style="text-align: left; margin-bottom: 1.25rem;">
+            <label id="lblInputPin" style="font-size: 0.85rem; font-weight: bold;">PINコード (0 + 部屋番号の4桁)</label>
+            <input type="password" id="inputPin" placeholder="例: 0305, 0515" required style="width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.3rem; font-size: 0.95rem;">
+            <p id="lblPinHint" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+              ※一般世帯ログインでは自室の安否報告のみ可能です（管理画面の操作はできません）。
+            </p>
+          </div>
+          <button type="submit" id="btnResidentSubmitLogin" class="btn-action" style="padding: 0.8rem; font-size: 0.95rem;">
+            安否報告画面へログイン
+          </button>
+        </form>
+      </div>
+
+      <!-- B. 管理者専用ログイン (Google OAuth + パスキー認証) -->
+      <div id="adminLoginPane" class="hidden">
+        <div class="passkey-box">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; color:#0f766e; font-size:0.92rem; margin-bottom:0.5rem;">
+            <span id="adminAuthBoxTitle">🛡️ 理事会・防災対策本部 認証</span>
+          </div>
+          <p id="adminAuthBoxDesc" style="font-size: 0.8rem; color: #334155; line-height: 1.5; margin-bottom: 1rem;">
+            管理者ダッシュボードへのアクセスは、<strong>事前登録された理事・役員のGoogleアカウント（パスキー / 生体認証）</strong>に限定されています。部屋番号・PINのみでは入れません。
+          </p>
+
+          <button type="button" id="btnStartPasskeyAuth" class="btn-google-passkey">
+            <span>🔑</span>
+            <span id="btnStartPasskeyText">Google パスキーで管理者認証する</span>
+          </button>
+
+          <div id="adminAuthAuditNote" style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed #cbd5e1; font-size: 0.74rem; color: var(--text-muted);">
+            ※認証試行および管理操作の履歴はすべてGoogleドライブ内の監査ログに自動記録されます。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. RESIDENT VIEW ==================== -->
+    <div id="residentView" class="hidden" style="max-width: 560px; margin: 1rem auto;">
+      <div class="announcement-banner">
+        <span style="font-size:1.2rem;">📣</span>
+        <div>
+          <div id="residentBannerHeader" style="font-weight:800; font-size:0.82rem; margin-bottom:0.15rem;">管理組合・対策本部からのお知らせ</div>
+          <div id="residentAnnouncementText"></div>
+        </div>
+      </div>
+
+      <div class="main-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #0f766e; padding-bottom: 0.6rem; margin-bottom: 1.2rem;">
+          <h2 style="color: #0f766e; font-size:1.35rem;" id="residentRoomTitle">401号室 安否報告</h2>
+          <span id="residentStatusBadge" style="font-size:0.78rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:99px; background:#f1f5f9;">未回答</span>
+        </div>
+
+        <form id="answerForm">
+          <div style="margin-bottom: 1.25rem;">
+            <label id="lblResStep1" style="font-weight: bold; font-size: 0.95rem;">1. 世帯の安否状況</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.5rem;">
+              <label style="padding: 0.75rem 0.5rem; border: 1.5px solid #86efac; border-radius: 10px; text-align: center; cursor: pointer; background: #f0fdf4; font-weight:700;">
+                <input type="radio" name="status" value="無事" checked> <span id="lblStatusSafeRadio">🟢 無事</span>
+              </label>
+              <label style="padding: 0.75rem 0.5rem; border: 1.5px solid #fca5a5; border-radius: 10px; text-align: center; cursor: pointer; background: #fef2f2; font-weight:700;">
+                <input type="radio" name="status" value="要支援"> <span id="lblStatusHelpRadio">🔴 要支援</span>
+              </label>
+              <label style="padding: 0.75rem 0.5rem; border: 1.5px solid #d8b4fe; border-radius: 10px; text-align: center; cursor: pointer; background: #faf5ff; font-weight:700;">
+                <input type="radio" name="status" value="避難中"> <span id="lblStatusEvacRadio">🟣 避難中</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem; display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+              <label id="lblResTotalMembers" style="font-weight: bold; font-size: 0.85rem;">在宅・世帯人数 (総数)</label>
+              <input type="number" id="inputMemberCount" min="1" max="15" value="2" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.25rem; font-size:1rem;">
+            </div>
+            <div style="flex: 1;">
+              <label id="lblResSafeMembers" style="font-weight: bold; font-size: 0.85rem;">うち無事な人数</label>
+              <input type="number" id="inputSafeCount" min="0" max="15" value="2" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.25rem; font-size:1rem;">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label id="lblResStep2" style="font-weight: bold; font-size: 0.95rem;">2. ライフライン異常の有無</label>
+            <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem; background:#f8fafc; padding:0.75rem; border-radius:8px; border:1px solid var(--border-color);">
+              <label style="cursor:pointer; font-weight:600;"><input type="checkbox" id="checkPower"> <span id="lblCheckPower">⚡ 停電あり</span></label>
+              <label style="cursor:pointer; font-weight:600;"><input type="checkbox" id="checkWater"> <span id="lblCheckWater">💧 断水・水漏れあり</span></label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label id="lblResStep3" style="font-weight: bold; font-size: 0.95rem;">3. 備考・連絡事項 (負傷・支援要請・避難先など)</label>
+            <textarea id="inputMemo" rows="3" placeholder="例: 全員無事です / 高齢のため階段移動に手助けが必要です 等" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.3rem;"></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmitResidentAnswer" class="btn-action" style="padding: 0.85rem; font-size: 1rem;">
+            ✅ 安否状況を報告・更新する
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== 3. ADMIN / PUBLIC DASHBOARD VIEW ==================== -->
+    <div id="adminView" class="hidden">
+
+      <div class="dashboard-top-bar">
+        <div class="dashboard-title">
+          <span id="dashboardMainHeading">🏢 マンション安否確認ダッシュボード</span>
+          <span id="dashboardModeSub" style="font-size:0.82rem; background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; padding:0.2rem 0.6rem; border-radius:99px;">
+            🔐 管理者モード (代行入力可)
+          </span>
+        </div>
+
+        <div class="dashboard-actions" id="adminActionButtons">
+          <button type="button" id="btnQuickProxyInput" class="btn-secondary">✏️ 部屋番号を指定して代行入力</button>
+          <button type="button" id="btnOpenTermModal" class="btn-secondary">📅 年度・管理者設定</button>
+          <button type="button" id="btnOpenPrintPreview" class="btn-print-main">🖨️ A4記録シート出力 (縦・横プレビュー)</button>
+        </div>
+      </div>
+
+      <!-- 5 KPI Cards -->
+      <div class="dashboard-stats">
+        <div class="stat-card" style="border-left: 4px solid #1e3a8a;">
+          <div class="stat-card-title" id="kpiTitle1" style="color: #1e3a8a;">メール登録世帯数</div>
+          <div class="stat-card-value" style="color: #1e3a8a;" id="statRegHouseholds">76戸</div>
+          <div class="stat-card-footer" id="statRegFooter">一斉通知対象: 76 / 全97戸</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-title" id="kpiTitle2">回答状況 (世帯)</div>
+          <div class="stat-card-value" id="statAnswerRate">0%</div>
+          <div class="stat-card-footer" id="statAnswerDetail">回答: 0 / 未回答: 97</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-title" id="kpiTitle3">無事確認人数 (個人)</div>
+          <div class="stat-card-value" id="statSafeCount">0名</div>
+          <div class="stat-card-footer" id="statSafeRate">申告世帯総数: 0名中</div>
+        </div>
+
+        <div class="stat-card" style="border-left: 4px solid var(--color-danger);">
+          <div class="stat-card-title" id="kpiTitle4" style="color: var(--color-danger);">要支援世帯</div>
+          <div class="stat-card-value" style="color: var(--color-danger);" id="statDangerCount">0世帯</div>
+          <div class="stat-card-footer" id="statEscapeDetail">避難中: 0世帯 / 無事: 0世帯</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-title" id="kpiTitle5">ライフライン異常件数</div>
+          <div class="stat-card-value" style="font-size: 1.25rem; display: flex; gap: 0.7rem; margin-top: 0.4rem;">
+            <span>⚡ <span id="lblKpiPower">停電</span>: <strong id="statPower">0</strong></span>
+            <span>💧 <span id="lblKpiWater">断水</span>: <strong id="statWater">0</strong></span>
+          </div>
+          <div class="stat-card-footer" id="kpiFooter5">世帯申告および巡回確認の集計</div>
+        </div>
+      </div>
+
+      <!-- Floor Map Card -->
+      <div class="main-card">
+        <div class="map-header">
+          <div class="map-title">
+            <span id="floorMapTitle">フロア別安否マップ (全97世帯: 7F〜1F)</span>
+          </div>
+          <div id="mapClickHint" style="font-size: 0.8rem; color: #0f766e; font-weight: 700; background: #f0fdfa; padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid #99f6e4;">
+            💡 部屋マスをクリックすると詳細確認・管理者による代行入力（上書き）ができます
+          </div>
+        </div>
+
+        <div class="filter-tabs-row">
+          <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all" id="fltAll">すべて</button>
+            <button class="filter-btn" data-filter="無事" id="fltSafe">🟢 無事</button>
+            <button class="filter-btn" data-filter="要支援" id="fltHelp">🔴 要支援</button>
+            <button class="filter-btn" data-filter="避難中" id="fltEvac">🟣 避難中</button>
+            <button class="filter-btn" data-filter="未回答" id="fltPending">🟡 未回答</button>
+          </div>
+
+          <div class="frame-legends">
+            <div style="border: 2.5px solid #1e3a8a; padding: 0 6px; border-radius: 4px; color: #1e3a8a; background: white;">✉ <span id="legBlueBox">青枠</span></div> <span id="legBlueText">メール登録世帯</span>
+            <div style="border: 3px solid #d97706; padding: 0 6px; border-radius: 4px; color: #d97706; background: white;">👑 <span id="legOrangeBox">橙枠</span></div> <span id="legOrangeText">理事・管理者世帯</span>
+          </div>
+        </div>
+
+        <div id="floorMatrix" class="floor-matrix" style="overflow-x: auto;"></div>
+      </div>
+
+      <!-- Bottom 2-Column Grid -->
+      <div class="bottom-grid" id="adminBottomGrid">
+        <div class="main-card">
+          <h3 style="color: var(--color-danger); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;" id="supportHeader">
+            <span>📌 要支援・要声かけ世帯 (0件)</span>
+          </h3>
+          <div id="supportList" style="font-size: 0.9rem; color: var(--text-muted);">
+            現在、要支援および避難中の世帯はありません。
+          </div>
+        </div>
+
+        <div class="main-card" id="adminSettingsCard">
+          <h3 id="settingsCardHeading" style="margin-bottom: 1rem;">⚙️ システム設定 &amp; 訓練コントロール</h3>
+
+          <div style="background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div id="lblSysModeTitle" style="font-weight: bold; font-size: 0.88rem;">システム動作モード</div>
+              <div id="lblSysModeDesc" style="font-size: 0.74rem; color: var(--text-muted);">訓練時は「訓練モード」バッジを付与して記録します。</div>
+            </div>
+            <button id="btnToggleTraining" style="background: #d97706; color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size:0.82rem;">
+              訓練モード中
+            </button>
+          </div>
+
+          <div style="background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div id="lblPubMapTitle" style="font-weight: bold; font-size: 0.88rem;">一般世帯への全体マップ公開 (閲覧専用)</div>
+              <div id="lblPubMapDesc" style="font-size: 0.74rem; color: var(--text-muted);">ONにすると一般住民も個人情報・メモを除いた全体状況を見られます。</div>
+            </div>
+            <button id="btnTogglePublicView" style="background: #0f766e; color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size:0.82rem;">
+              公開中 (マスク表示)
+            </button>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label id="lblAnnouncementInput" style="font-weight: bold; font-size: 0.85rem;">住民へ配信するお知らせ・本部メモ</label>
+            <textarea id="inputAnnouncement" rows="2" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 0.3rem; font-size: 0.84rem;"></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <button id="btnUpdateAnnouncement" class="btn-action" style="padding:0.6rem;">📣 お知らせを更新</button>
+            <button id="btnLoadSampleData" class="btn-secondary" style="justify-content:center; border-color:#0f766e; color:#0f766e;">
+              🧪 訓練サンプル回答を投入
+            </button>
+          </div>
+
+          <div>
+            <button id="btnResetAll" class="btn-danger-outline" style="padding:0.55rem; font-size:0.82rem;">🧹 全97戸の回答データをリセット</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== MODAL 1: ROOM DETAIL & ADMIN OVERRIDE ==================== -->
+  <div id="roomModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border-color); padding-bottom: 0.6rem; margin-bottom: 1rem;">
+        <h3 id="modalRoomHeader" style="font-size:1.2rem; color:#0f172a;">401号室 詳細・代行入力</h3>
+        <span id="modalInputSourceBadge" style="font-size:0.75rem; padding:0.2rem 0.55rem; border-radius:99px; background:#f1f5f9; font-weight:700;">未回答</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 125px 1fr; gap: 0.45rem; font-size: 0.86rem; background:#f8fafc; padding:0.85rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom: 1rem;">
+        <div id="lblModalUnit" style="color:var(--text-muted);">部屋番号:</div><div id="modalRoomNum" style="font-weight:800;"></div>
+        <div id="lblModalRole" style="color:var(--text-muted);">区分・権限:</div><div id="modalRole"></div>
+        <div id="lblModalEmail" style="color:var(--text-muted);">連絡用メール:</div><div id="modalEmail"></div>
+        <div id="lblModalUpdated" style="color:var(--text-muted);">最終更新日時:</div><div id="modalLastUpdated">-</div>
+      </div>
+
+      <div id="adminOverrideSection" style="border-top: 1px dashed #cbd5e1; padding-top: 1rem;">
+        <div style="font-weight:800; color:#0f766e; font-size:0.92rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+          <span id="lblOverrideSectionTitle">✏️ 管理者による安否代行入力・上書き</span>
+        </div>
+
+        <div style="margin-bottom:0.85rem;">
+          <label id="lblOverrideStatus" style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:0.35rem;">安否ステータス</label>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.4rem;">
+            <label style="padding:0.5rem 0.25rem; border:1px solid #86efac; background:#f0fdf4; border-radius:6px; text-align:center; font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="overrideStatus" value="無事"> <span id="lblOvSafe">🟢無事</span>
+            </label>
+            <label style="padding:0.5rem 0.25rem; border:1px solid #fca5a5; background:#fef2f2; border-radius:6px; text-align:center; font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="overrideStatus" value="要支援"> <span id="lblOvHelp">🔴要支援</span>
+            </label>
+            <label style="padding:0.5rem 0.25rem; border:1px solid #d8b4fe; background:#faf5ff; border-radius:6px; text-align:center; font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="overrideStatus" value="避難中"> <span id="lblOvEvac">🟣避難中</span>
+            </label>
+            <label style="padding:0.5rem 0.25rem; border:1px solid #fde047; background:#fefce8; border-radius:6px; text-align:center; font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="overrideStatus" value="未回答"> <span id="lblOvPend">🟡未回答</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-bottom:0.85rem;">
+          <div style="flex:1;">
+            <label id="lblOvTotalMembers" style="font-size:0.8rem; font-weight:700;">世帯人数 (総数)</label>
+            <input type="number" id="overrideMemberCount" min="0" max="15" value="2" style="width:100%; padding:0.45rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.2rem;">
+          </div>
+          <div style="flex:1;">
+            <label id="lblOvSafeMembers" style="font-size:0.8rem; font-weight:700;">無事確認人数</label>
+            <input type="number" id="overrideSafeCount" min="0" max="15" value="2" style="width:100%; padding:0.45rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.2rem;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:0.85rem;">
+          <label id="lblOvLifeline" style="font-size:0.8rem; font-weight:700;">ライフライン状況</label>
+          <div style="display:flex; gap:1.25rem; margin-top:0.3rem; font-size:0.85rem;">
+            <label style="cursor:pointer;"><input type="checkbox" id="overridePower"> <span id="lblOvPower">⚡ 停電中</span></label>
+            <label style="cursor:pointer;"><input type="checkbox" id="overrideWater"> <span id="lblOvWater">💧 断水中</span></label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.25rem;">
+            <label id="lblOvMemo" style="font-size:0.8rem; font-weight:700;">確認メモ・代行入力理由</label>
+            <div style="display:flex; gap:0.25rem;">
+              <button type="button" id="btnTplVisit" class="proxy-tpl-btn" style="font-size:0.68rem; padding:2px 6px; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; cursor:pointer;">訪問確認済</button>
+              <button type="button" id="btnTplPhone" class="proxy-tpl-btn" style="font-size:0.68rem; padding:2px 6px; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; cursor:pointer;">電話確認済</button>
+            </div>
+          </div>
+          <textarea id="overrideMemo" rows="2" placeholder="例: 理事巡回にてインターホン越しに無事確認" style="width:100%; padding:0.5rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.25rem; font-size:0.85rem;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:0.6rem;">
+          <button type="button" id="btnSaveOverride" class="btn-action" style="flex:2;">💾 この部屋の安否を上書き保存</button>
+          <button type="button" id="closeModalBtn" class="btn-action" style="flex:1; background: #64748b;">閉じる</button>
+        </div>
+      </div>
+
+      <div id="residentReadOnlyModalFooter" class="hidden">
+        <p id="lblReadOnlyPrivacy" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem;">
+          ※プライバシー保護のため、一般閲覧モードでは各世帯の詳細メモや個人情報は非表示となっています。
+        </p>
+        <button type="button" id="closeModalBtnReadOnly" class="btn-action" style="background: #64748b;">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: GOOGLE PASSKEY AUTHENTICATION ==================== -->
+  <div id="passkeyModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 490px;">
+      <div style="text-align:center; margin-bottom:1rem;">
+        <div style="width:48px; height:48px; border-radius:50%; background:#f0fdfa; color:#0f766e; display:inline-flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.5rem; border:1px solid #99f6e4;">
+          🔐
+        </div>
+        <h3 id="pkModalTitle" style="font-size:1.15rem; color:#0f172a;">Google アカウント ＆ パスキー本人認証</h3>
+        <p id="pkModalDesc" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.3rem; line-height:1.45;">
+          部屋番号の選択はできません。<strong>認証されたGoogleメールアドレスから、登録済みの部屋番号（1対1紐付け）をシステムが自動特定</strong>します。
+        </p>
+      </div>
+
+      <div id="passkeyErrorBox" class="hidden" style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; padding:0.7rem; border-radius:8px; font-size:0.8rem; font-weight:700; margin-bottom:1rem;"></div>
+
+      <div style="margin-bottom:0.9rem;">
+        <label id="lblPkEmailInput" style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:0.35rem;">
+          あなたのGoogleメールアドレス (理事会グループ登録アドレス)
+        </label>
+        <input type="email" id="inputAdminEmail" value="" placeholder="Googleメールアドレスを入力してください" autocomplete="off" style="width:100%; padding:0.7rem; border:1.5px solid var(--border-color); border-radius:8px; font-size:0.92rem; font-weight:600;">
+        <div id="resolvedRoomPreview" class="hidden" style="margin-top:0.4rem; font-size:0.78rem; color:#0f766e; font-weight:700; background:#f0fdfa; padding:0.35rem 0.6rem; border-radius:6px; border:1px solid #99f6e4;"></div>
+        <div id="demoAdminQuickHint" class="hidden" style="margin-top:0.45rem; font-size:0.74rem; color:#1e3a8a; background:#eff6ff; padding:0.4rem 0.6rem; border-radius:6px; border:1px dashed #93c5fd;">
+          💡 <span id="lblDemoEmailHint">デモ用テストアドレス: <code>board401@example.com</code> (401号室) または <code>board103@example.com</code> (103号室)</span>
+          <button type="button" id="btnFillDemoAdminEmail" style="margin-left:0.4rem; background:#1e3a8a; color:white; border:none; border-radius:4px; padding:2px 6px; font-size:0.7rem; cursor:pointer; font-weight:700;">401号室を自動入力</button>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:0.75rem; font-size:0.76rem; color:#334155; margin-bottom:1.15rem; line-height:1.45;">
+        <div>🛡️ <strong id="pkRuleHeading">なりすまし防止・1対1アカウント拘束仕様</strong></div>
+        <ul style="padding-left:1.1rem; margin-top:0.25rem; color:var(--text-muted);">
+          <li id="pkRule1">Google OAuth / 端末パスキー（Touch ID・Face ID・Windows Hello）で本人確認を行います。</li>
+          <li id="pkRule2">ログインしたGoogleアカウントに紐づくご自身の部屋番号に自動固定され、他室の役員としてログインすることはできません。</li>
+          <li id="pkRule3">ログイン試行およびすべての操作履歴はGoogleドライブ内の操作監査ログに記録されます。</li>
+        </ul>
+      </div>
+
+      <div style="display:flex; gap:0.6rem;">
+        <button type="button" id="btnConfirmPasskey" class="btn-google-passkey" style="flex:2; padding:0.75rem;">
+          <span id="btnConfirmPasskeyText">👆 パスキー（生体認証）で本人確認して入室</span>
+        </button>
+        <button type="button" id="btnCancelPasskey" class="btn-action" style="flex:1; background:#64748b;">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: TERM & ANNUAL URL ROTATION SETTINGS ==================== -->
+  <div id="termModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 640px;">
+      <h3 id="termModalHeading" style="font-size:1.15rem; color:#0f766e; border-bottom:2px solid #0f766e; padding-bottom:0.5rem; margin-bottom:1rem;">
+        📅 年度別管理・理事メール紐付け設定 &amp; URL更新ガイド
+      </h3>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+        <div>
+          <label id="lblTermTitleInput" style="font-size:0.8rem; font-weight:700;">現在の運用期・年度</label>
+          <input type="text" id="inputTermTitle" value="2026年度 (第12期)" style="width:100%; padding:0.55rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.25rem; font-weight:700;">
+        </div>
+        <div>
+          <label id="lblAdminGroupInput" style="font-size:0.8rem; font-weight:700;">連動Googleグループ</label>
+          <input type="text" id="inputAdminGroup" value="your-condo-board@googlegroups.com" style="width:100%; padding:0.55rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.25rem;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label id="lblAdminMapTextarea" style="font-size:0.8rem; font-weight:700;">
+          理事・管理者世帯の「部屋番号 : Googleメールアドレス」1対1紐付けマスタ
+        </label>
+        <textarea id="inputAdminEmailMap" rows="6" style="width:100%; padding:0.55rem; border:1px solid var(--border-color); border-radius:6px; margin-top:0.25rem; font-family:monospace; font-size:0.8rem; line-height:1.45;"></textarea>
+        <p id="lblAdminMapHint" style="font-size:0.73rem; color:var(--text-muted); margin-top:0.25rem;">
+          ※1行に1世帯ずつ <code>部屋番号:メールアドレス</code> で記述（GAS本番環境ではスプレッドシート <code>m_users</code> のメールアドレスとGoogleグループから自動照合されます）。
+        </p>
+      </div>
+
+      <div style="background:#f0fdfa; border:1px solid #99f6e4; border-radius:8px; padding:0.9rem; font-size:0.8rem; line-height:1.55; margin-bottom:1.25rem;">
+        <div id="urlGuideTitle" style="font-weight:800; color:#0f766e; margin-bottom:0.35rem;">🔒 毎年のURL更新（前年URLの削除・無効化）手順（所要5分）</div>
+        <ol style="padding-left:1.2rem; color:#1e293b;">
+          <li id="urlGuideStep1">Googleスプレッドシート（またはドライブ）から「Apps Script」を開く。</li>
+          <li id="urlGuideStep2">右上の「デプロイ ＞ デプロイを管理」を開く。</li>
+          <li id="urlGuideStep3">前年度のデプロイ横にある「アーカイブ（削除）」をクリック → 旧URLからのアクセスが完全遮断されます。</li>
+          <li id="urlGuideStep4">「新しいデプロイ」をクリックすると、新年度専用の新しいURLが発行されます。</li>
+        </ol>
+      </div>
+
+      <div style="display:flex; gap:0.6rem;">
+        <button type="button" id="btnSaveTermConfig" class="btn-action" style="flex:2;">💾 年度・管理者1対1紐付け設定を保存</button>
+        <button type="button" id="btnCloseTermModal" class="btn-action" style="flex:1; background:#64748b;">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 4: A4 PRINT / PDF PREVIEW STUDIO ==================== -->
+  <div id="printPreviewModal" class="modal-overlay hidden">
+    <div class="preview-modal">
+      <div class="preview-toolbar">
+        <div style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+          <span id="printToolbarTitle" style="font-weight:800; font-size:1rem;">🖨️ 防災訓練・災害記録 A4出力プレビュー (1ページ完結)</span>
+          <div style="display:inline-flex; background:#1e293b; padding:3px; border-radius:8px; border:1px solid #475569;">
+            <button type="button" id="btnLayoutLandscape" style="background:#0f766e; color:white; border:none; padding:0.35rem 0.85rem; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+              📐 A4 横向き (推奨・掲示用)
+            </button>
+            <button type="button" id="btnLayoutPortrait" style="background:transparent; color:#cbd5e1; border:none; padding:0.35rem 0.85rem; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+              📄 A4 縦向き (回覧・保管用)
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <button type="button" id="btnExecutePrint" style="background:#10b981; color:white; border:none; padding:0.5rem 1.15rem; border-radius:8px; font-weight:800; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; gap:0.4rem;">
+            🖨️ このレイアウトで印刷 / PDF保存
+          </button>
+          <button type="button" id="btnClosePrintPreview" style="background:#475569; color:white; border:none; padding:0.5rem 0.9rem; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">
+            ✕ 閉じる
+          </button>
+        </div>
+      </div>
+
+      <div class="preview-stage">
+        <div id="a4SheetContainer" class="a4-sheet landscape">
+          <div>
+            <div class="report-header">
+              <div>
+                <div style="font-size:8.5pt; font-weight:800; color:#0f766e;" id="reportTermSub">
+                  サンプルレジデンス 管理組合【2026年度】防災対策本部
+                </div>
+                <div class="report-title-main" id="reportMainTitle">
+                  マンション安否確認 全体状況記録シート
+                </div>
+              </div>
+              <div class="report-meta">
+                <div><strong id="repMetaTimeLbl">出力日時:</strong> <span id="reportTimestamp"></span></div>
+                <div><strong id="repMetaModeLbl">稼働区分:</strong> <span id="reportModeLabel">訓練モード</span> / <strong id="repMetaTargetLbl">対象:</strong> <span id="reportTargetUnitsLabel">全97世帯 (1F〜7F)</span></div>
+              </div>
+            </div>
+
+            <div class="report-kpi-strip">
+              <div class="report-kpi-box" style="border-left:3.5px solid #1e3a8a;">
+                <div class="report-kpi-label" id="repKpiLbl1">メール登録世帯</div>
+                <div class="report-kpi-val" id="repKpiReg" style="color:#1e3a8a;">76戸</div>
+                <div class="report-kpi-sub" id="repKpiRegSub">全97戸 (登録率 78.4%)</div>
+              </div>
+              <div class="report-kpi-box" style="border-left:3.5px solid #0f766e;">
+                <div class="report-kpi-label" id="repKpiLbl2">安否回答率 (世帯)</div>
+                <div class="report-kpi-val" id="repKpiRate">0%</div>
+                <div class="report-kpi-sub" id="repKpiRateSub">回答: 0 / 未回答: 97</div>
+              </div>
+              <div class="report-kpi-box" style="border-left:3.5px solid #10b981;">
+                <div class="report-kpi-label" id="repKpiLbl3">無事確認人数</div>
+                <div class="report-kpi-val" id="repKpiSafe" style="color:#166534;">0名</div>
+                <div class="report-kpi-sub" id="repKpiSafeSub">申告世帯総数: 0名</div>
+              </div>
+              <div class="report-kpi-box" style="border-left:3.5px solid #ef4444;">
+                <div class="report-kpi-label" id="repKpiLbl4">要支援 / 避難中</div>
+                <div class="report-kpi-val" id="repKpiDanger" style="color:#dc2626;">0世帯</div>
+                <div class="report-kpi-sub" id="repKpiDangerSub">避難中: 0 / 無事: 0</div>
+              </div>
+              <div class="report-kpi-box" style="border-left:3.5px solid #f59e0b;">
+                <div class="report-kpi-label" id="repKpiLbl5">ライフライン異常</div>
+                <div class="report-kpi-val" id="repKpiLifeline" style="font-size:11pt;">⚡0 / 💧0</div>
+                <div class="report-kpi-sub" id="repKpiLifelineSub">各戸申告・巡回確認計</div>
+              </div>
+            </div>
+
+            <div class="report-map-box">
+              <div class="report-map-header">
+                <span id="repMapBoxTitle">🏢 フロア別安否状況一覧マップ (全97戸)</span>
+                <span id="repMapLegend" style="font-size:7.2pt; font-weight:700; color:#475569;">
+                  【凡例】🟢無事 🔴要支援 🟣避難中 🟡未回答 ｜ ✉青枠:メール登録 👑橙枠:理事・役員 [代]:管理者代行
+                </span>
+              </div>
+              <div id="reportFloorMatrix" class="report-floor-matrix"></div>
+            </div>
+
+            <div class="report-bottom-split">
+              <div class="report-panel">
+                <div class="report-panel-title" style="color:#dc2626;">
+                  <span id="repSupportTitle">📌 要支援・避難中・特記世帯リスト</span>
+                  <span id="repSupportPriorityLbl" style="font-size:7pt; color:#64748b;">優先確認対象</span>
+                </div>
+                <div id="reportSupportTableWrap" style="overflow:hidden;"></div>
+              </div>
+
+              <div class="report-panel">
+                <div class="report-panel-title" style="color:#0f766e;">
+                  <span id="repNotesTitle">📣 対策本部 連絡事項・訓練記録メモ</span>
+                  <span id="repNotesEditHint" style="font-size:7pt; color:#64748b;">(直接編集して印刷可能)</span>
+                </div>
+                <textarea id="reportEditableNotes" style="width:100%; flex:1; min-height:65px; border:1px solid #e2e8f0; border-radius:4px; padding:5px; font-size:7.8pt; line-height:1.4; resize:none;"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-footer">
+            <div id="repFooterLeft">マンション安否確認システム — 掲示・防災訓練記録用帳票</div>
+            <div id="repFooterRight">確認責任者サイン欄 / Verified by: ________________________</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APPLICATION SCRIPT (Bilingual JP / EN) ==================== -->
+  <script>
+    /**
+     * ============================================================================
+     * ★ マンション初期設定ブロック / ★ BUILDING CONFIGURATION (CUSTOMIZE HERE)
+     * ============================================================================
+     * ご自身のマンション・コンドミニアムに合わせて以下の設定値を変更してください。
+     * Edit the values below to match your condominium / apartment building.
+     */
+    var APP_CONFIG = {
+      // 建物名称 (Building Name in Japanese & English)
+      buildingNameJa: 'サンプルレジデンス',
+      buildingNameEn: 'Sunrise Condominium',
+
+      // 運用期・年度ラベル (Board Term / Fiscal Year)
+      termTitleJa: '2026年度 (第12期)',
+      termTitleEn: 'FY2026 (Term 12)',
+
+      // 理事会Googleグループ (Board Google Group Email)
+      adminGroupEmail: 'your-condo-board@googlegroups.com',
+
+      // 各階の戸数設定 (Floor Layout: { 階数: 戸数 })
+      // 例: 7階建て・全97戸 (7F:8戸, 6F:11戸, 5F:15戸, 4F:16戸, 3F:17戸, 2F:16戸, 1F:14戸)
+      floorConfig: { 7: 8, 6: 11, 5: 15, 4: 16, 3: 17, 2: 16, 1: 14 },
+
+      // 理事・管理者（役員）の「部屋番号 : Googleメールアドレス」1対1紐付けマスタ
+      // 各Googleアカウントは自身の部屋番号としてのみログイン可能（他室へのなりすまし不可）
+      adminRoomToEmail: {
+        '103': 'board103@example.com',
+        '202': 'board202@example.com',
+        '301': 'board301@example.com',
+        '317': 'board317@example.com',
+        '401': 'board401@example.com',
+        '413': 'board413@example.com',
+        '501': 'board501@example.com',
+        '513': 'board513@example.com',
+        '514': 'board514@example.com',
+        '610': 'board610@example.com',
+        '611': 'board611@example.com'
+      }
+    };
+
+    // ==================== 多言語辞書 (Bilingual Dictionary: JA / EN) ====================
+    var I18N = {
+      ja: {
+        langBtn: '🌐 English',
+        demoBannerTitle: '🎯 ライブデモ環境 (Open Source Edition)',
+        demoBannerSub: '— インストール不要で全機能（住民回答・管理者パスキー・代行入力・A4出力）をお試しいただけます',
+        demoAdminBtn: '🔐 管理者画面をすぐ体験 (401号室)',
+        demoResidentBtn: '🏠 住民回答画面を体験 (305号室)',
+        demoSampleBtn: '🧪 サンプル訓練データ投入',
+        demoPrintBtn: '🖨️ A4記録シート出力',
+        headerAppTitle: APP_CONFIG.buildingNameJa + ' 安否確認',
+        trainingModeBadge: '訓練モード',
+        emergencyModeBadge: '🚨 災害本稼働',
+        onlineStatus: '● オンライン稼働中',
+        notLoggedIn: '未ログイン',
+        logoutBtn: 'ログアウト',
+        toResidentInputBtn: '🏠 自室の安否入力へ',
+        toAdminDashBtn: '🏢 管理画面へ戻る',
+        toPublicMapBtn: '🗺️ マンション全体状況を見る(閲覧専用)',
+        backToMyReportBtn: '📝 自室の安否報告へ戻る',
+        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameJa + ' 管理組合【' + APP_CONFIG.termTitleJa + '】',
+        loginMainTitle: 'マンション安否確認システム',
+        loginSubTitle: '災害時・防災訓練時の世帯安否報告および本部集計システム',
+        tabResidentLogin: '🏠 一般世帯ログイン',
+        tabAdminLogin: '🔐 理事・管理者 (パスキー)',
+        lblInputRoom: '部屋番号 (例: 101〜708)',
+        phInputRoom: '例: 305, 515',
+        lblInputPin: 'PINコード (0 + 部屋番号の4桁)',
+        phInputPin: '例: 0305, 0515',
+        lblPinHint: '※一般世帯ログインでは自室の安否報告のみ可能です（管理画面の操作はできません）。',
+        btnResidentSubmitLogin: '安否報告画面へログイン',
+        adminAuthBoxTitle: '🛡️ 理事会・防災対策本部 認証',
+        adminAuthBoxDesc: '管理者ダッシュボードへのアクセスは、<strong>事前登録された理事・役員のGoogleアカウント（パスキー / 生体認証）<\/strong>に限定されています。部屋番号・PINのみでは入れません。',
+        btnStartPasskeyText: 'Google パスキーで管理者認証する',
+        adminAuthAuditNote: '※認証試行および管理操作の履歴はすべてGoogleドライブ内の監査ログに自動記録されます。',
+        residentBannerHeader: '管理組合・対策本部からのお知らせ',
+        lblResStep1: '1. 世帯の安否状況',
+        statusSafe: '無事',
+        statusHelp: '要支援',
+        statusEvac: '避難中',
+        statusPending: '未回答',
+        lblStatusSafeRadio: '🟢 無事',
+        lblStatusHelpRadio: '🔴 要支援',
+        lblStatusEvacRadio: '🟣 避難中',
+        lblResTotalMembers: '在宅・世帯人数 (総数)',
+        lblResSafeMembers: 'うち無事な人数',
+        lblResStep2: '2. ライフライン異常の有無',
+        lblCheckPower: '⚡ 停電あり',
+        lblCheckWater: '💧 断水・水漏れあり',
+        lblResStep3: '3. 備考・連絡事項 (負傷・支援要請・避難先など)',
+        phInputMemo: '例: 全員無事です / 高齢のため階段移動に手助けが必要です 等',
+        btnSubmitResidentAnswer: '✅ 安否状況を報告・更新する',
+        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameJa + ' 安否確認ダッシュボード',
+        modeSubAdmin: '🔐 管理者モード (代行入力・印刷出力可)',
+        modeSubPublic: '👁️ 一般住民向け 全体状況閲覧モード (個人メモ非表示)',
+        btnQuickProxyInput: '✏️ 部屋番号を指定して代行入力',
+        btnOpenTermModal: '📅 年度・管理者設定',
+        btnOpenPrintPreview: '🖨️ A4記録シート出力 (縦・横プレビュー)',
+        kpiTitle1: 'メール登録世帯数',
+        kpiTitle2: '回答状況 (世帯)',
+        kpiTitle3: '無事確認人数 (個人)',
+        kpiTitle4: '要支援世帯',
+        kpiTitle5: 'ライフライン異常件数',
+        lblKpiPower: '停電',
+        lblKpiWater: '断水',
+        kpiFooter5: '世帯申告および巡回確認の集計',
+        mapClickHintAdmin: '💡 部屋マスをクリックすると詳細確認・<strong>管理者による代行入力（上書き）<\/strong>ができます',
+        mapClickHintPublic: '💡 部屋マスをクリックすると安否ステータスを確認できます（個人メモ等は保護されています）',
+        fltAll: 'すべて',
+        fltSafe: '🟢 無事',
+        fltHelp: '🔴 要支援',
+        fltEvac: '🟣 避難中',
+        fltPending: '🟡 未回答',
+        legBlueBox: '青枠',
+        legBlueText: 'メール登録世帯',
+        legOrangeBox: '橙枠',
+        legOrangeText: '理事・管理者世帯',
+        supportEmpty: '現在、要支援および避難中の世帯はありません。',
+        settingsCardHeading: '⚙️ システム設定 & 訓練コントロール',
+        lblSysModeTitle: 'システム動作モード',
+        lblSysModeDesc: '訓練時は「訓練モード」バッジを付与して記録します。',
+        btnTrainingActive: '訓練モード中',
+        btnEmergencyActive: '🚨 災害本稼働中',
+        lblPubMapTitle: '一般世帯への全体マップ公開 (閲覧専用)',
+        lblPubMapDesc: 'ONにすると一般住民も個人情報・メモを除いた全体状況を見られます。',
+        btnPubMapOn: '公開中 (マスク表示)',
+        btnPubMapOff: '非公開 (管理者のみ)',
+        lblAnnouncementInput: '住民へ配信するお知らせ・本部メモ',
+        btnUpdateAnnouncement: '📣 お知らせを更新',
+        btnLoadSampleData: '🧪 訓練サンプル回答を投入',
+        btnResetAll: '🧹 全世帯の回答データをリセット',
+        lblModalUnit: '部屋番号:',
+        lblModalRole: '区分・権限:',
+        lblModalEmail: '連絡用メール:',
+        lblModalUpdated: '最終更新日時:',
+        lblOverrideSectionTitle: '✏️ 管理者による安否代行入力・上書き',
+        lblOverrideStatus: '安否ステータス',
+        lblOvSafe: '🟢無事',
+        lblOvHelp: '🔴要支援',
+        lblOvEvac: '🟣避難中',
+        lblOvPend: '🟡未回答',
+        lblOvTotalMembers: '世帯人数 (総数)',
+        lblOvSafeMembers: '無事確認人数',
+        lblOvLifeline: 'ライフライン状況',
+        lblOvPower: '⚡ 停電中',
+        lblOvWater: '💧 断水中',
+        lblOvMemo: '確認メモ・代行入力理由',
+        btnTplVisit: '訪問確認済',
+        tplVisitText: '【管理者代行】インターホン・訪問にて全員無事を確認',
+        btnTplPhone: '電話確認済',
+        tplPhoneText: '【管理者代行】電話・LINEにて安否確認済',
+        btnSaveOverride: '💾 この部屋の安否を上書き保存',
+        closeBtn: '閉じる',
+        lblReadOnlyPrivacy: '※プライバシー保護のため、一般閲覧モードでは各世帯の詳細メモや個人情報は非表示となっています。',
+        pkModalTitle: 'Google アカウント ＆ パスキー本人認証',
+        pkModalDesc: '部屋番号の選択はできません。<strong>認証されたGoogleメールアドレスから、登録済みの部屋番号（1対1紐付け）をシステムが自動特定<\/strong>します。',
+        lblPkEmailInput: 'あなたのGoogleメールアドレス (理事会グループ登録アドレス)',
+        phPkEmailInput: 'Googleメールアドレスを入力してください',
+        lblDemoEmailHint: 'デモ用テストアドレス: <code>board401@example.com<\/code> (401号室) または <code>board103@example.com<\/code> (103号室)',
+        btnFillDemoAdminEmail: '401号室を自動入力',
+        pkRuleHeading: 'なりすまし防止・1対1アカウント拘束仕様',
+        pkRule1: 'Google OAuth / 端末パスキー（Touch ID・Face ID・Windows Hello）で本人確認を行います。',
+        pkRule2: 'ログインしたGoogleアカウントに紐づくご自身の部屋番号に自動固定され、他室の役員としてログインすることはできません。',
+        pkRule3: 'ログイン試行およびすべての操作履歴はGoogleドライブ内の操作監査ログに記録されます。',
+        btnConfirmPasskeyText: '👆 パスキー（生体認証）で本人確認して入室',
+        cancelBtn: 'キャンセル',
+        termModalHeading: '📅 年度別管理・理事メール紐付け設定 & URL更新ガイド',
+        lblTermTitleInput: '現在の運用期・年度',
+        lblAdminGroupInput: '連動Googleグループ',
+        lblAdminMapTextarea: '理事・管理者世帯の「部屋番号 : Googleメールアドレス」1対1紐付けマスタ',
+        lblAdminMapHint: '※1行に1世帯ずつ <code>部屋番号:メールアドレス<\/code> で記述（GAS本番環境ではスプレッドシート <code>m_users<\/code> とGoogleグループから自動照合されます）。',
+        urlGuideTitle: '🔒 毎年のURL更新（前年URLの削除・無効化）手順（所要5分）',
+        urlGuideStep1: 'Googleスプレッドシート（またはドライブ）から「Apps Script」を開く。',
+        urlGuideStep2: '右上の「デプロイ ＞ デプロイを管理」を開く。',
+        urlGuideStep3: '前年度のデプロイ横にある「アーカイブ（削除）」をクリック → 旧URLからのアクセスが完全遮断されます。',
+        urlGuideStep4: '「新しいデプロイ」をクリックすると、新年度専用の新しいURLが発行されます。',
+        btnSaveTermConfig: '💾 年度・管理者1対1紐付け設定を保存',
+        printToolbarTitle: '🖨️ 防災訓練・災害記録 A4出力プレビュー (1ページ完結)',
+        btnLayoutLandscape: '📐 A4 横向き (推奨・掲示用)',
+        btnLayoutPortrait: '📄 A4 縦向き (回覧・保管用)',
+        btnExecutePrint: '🖨️ このレイアウトで印刷 / PDF保存',
+        btnClosePrintPreview: '✕ 閉じる',
+        reportMainTitle: 'マンション安否確認 全体状況記録シート',
+        repMetaTimeLbl: '出力日時:',
+        repMetaModeLbl: '稼働区分:',
+        repMetaTargetLbl: '対象:',
+        repKpiLbl1: 'メール登録世帯',
+        repKpiLbl2: '安否回答率 (世帯)',
+        repKpiLbl3: '無事確認人数',
+        repKpiLbl4: '要支援 / 避難中',
+        repKpiLbl5: 'ライフライン異常',
+        repKpiLifelineSub: '各戸申告・巡回確認計',
+        repMapLegend: '【凡例】🟢無事 🔴要支援 🟣避難中 🟡未回答 ｜ ✉青枠:メール登録 👑橙枠:理事・役員 [代]:管理者代行',
+        repSupportPriorityLbl: '優先確認対象',
+        repNotesTitle: '📣 対策本部 連絡事項・訓練記録メモ',
+        repNotesEditHint: '(直接編集して印刷可能)',
+        repFooterLeft: APP_CONFIG.buildingNameJa + ' マンション安否確認システム — 掲示・防災訓練記録用帳票',
+        repFooterRight: '確認責任者サイン欄: ________________________',
+        defaultAnnouncement: '【防災訓練】現在、大規模地震を想定したマンション安否確認訓練を実施中です。各世帯は速やかに安否状況を報告してください。'
+      },
+      en: {
+        langBtn: '🌐 日本語',
+        demoBannerTitle: '🎯 Live Interactive Demo (Open Source Edition)',
+        demoBannerSub: '— Try all features instantly in your browser (Resident Report, Admin Passkey, Proxy Override, A4 Print)',
+        demoAdminBtn: '🔐 Try Admin Dashboard (Unit 401)',
+        demoResidentBtn: '🏠 Try Resident Form (Unit 305)',
+        demoSampleBtn: '🧪 Load Sample Drill Data',
+        demoPrintBtn: '🖨️ A4 Printable Report',
+        headerAppTitle: APP_CONFIG.buildingNameEn + ' Safety Check',
+        trainingModeBadge: 'Drill Mode',
+        emergencyModeBadge: '🚨 Emergency Active',
+        onlineStatus: '● System Online',
+        notLoggedIn: 'Not Logged In',
+        logoutBtn: 'Log Out',
+        toResidentInputBtn: '🏠 My Unit Report',
+        toAdminDashBtn: '🏢 Admin Dashboard',
+        toPublicMapBtn: '🗺️ Building Status Map (Public View)',
+        backToMyReportBtn: '📝 Back to My Unit Report',
+        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameEn + ' HOA Board [' + APP_CONFIG.termTitleEn + ']',
+        loginMainTitle: 'Resident Safety Check System',
+        loginSubTitle: 'Emergency & Disaster Drill Household Safety Reporting and HOA HQ Dashboard',
+        tabResidentLogin: '🏠 Resident Login',
+        tabAdminLogin: '🔐 HOA Board / Admin (Passkey)',
+        lblInputRoom: 'Unit Number (e.g., 101 - 708)',
+        phInputRoom: 'e.g., 305, 515',
+        lblInputPin: 'PIN Code (4 digits: 0 + Unit Number)',
+        phInputPin: 'e.g., 0305, 0515',
+        lblPinHint: '* Resident login only allows reporting for your own unit (Admin controls are restricted).',
+        btnResidentSubmitLogin: 'Log In to Safety Report',
+        adminAuthBoxTitle: '🛡️ HOA Board & Emergency Team Verification',
+        adminAuthBoxDesc: 'Access to the Admin Dashboard is strictly restricted to <strong>pre-registered HOA Board Members via Google Account / Passkey (Biometric Auth)<\/strong>. Unit + PIN cannot access admin controls.',
+        btnStartPasskeyText: 'Verify with Google Passkey',
+        adminAuthAuditNote: '* All authentication attempts and administrative actions are automatically logged to Google Drive.',
+        residentBannerHeader: 'Announcement from HOA Emergency HQ',
+        lblResStep1: '1. Household Safety Status',
+        statusSafe: 'Safe',
+        statusHelp: 'Need Help',
+        statusEvac: 'Evacuated',
+        statusPending: 'Unconfirmed',
+        lblStatusSafeRadio: '🟢 Safe',
+        lblStatusHelpRadio: '🔴 Need Help',
+        lblStatusEvacRadio: '🟣 Evacuated',
+        lblResTotalMembers: 'Total Household Members',
+        lblResSafeMembers: 'Confirmed Safe Members',
+        lblResStep2: '2. Utility / Lifeline Outages',
+        lblCheckPower: '⚡ Power Outage',
+        lblCheckWater: '💧 Water Outage / Leak',
+        lblResStep3: '3. Notes / Assistance Needed / Evacuation Location',
+        phInputMemo: 'e.g., Everyone is safe / Need assistance with stairs on 3rd floor',
+        btnSubmitResidentAnswer: '✅ Submit Safety Report',
+        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameEn + ' Safety Dashboard',
+        modeSubAdmin: '🔐 Admin Mode (Proxy Entry & Print Enabled)',
+        modeSubPublic: '👁️ Resident Public View (Personal Notes Masked)',
+        btnQuickProxyInput: '✏️ Proxy Entry by Unit #',
+        btnOpenTermModal: '📅 Annual Term & Admin Setup',
+        btnOpenPrintPreview: '🖨️ A4 Printable Report (Landscape / Portrait)',
+        kpiTitle1: 'Email Registered Units',
+        kpiTitle2: 'Response Rate (Units)',
+        kpiTitle3: 'Confirmed Safe (People)',
+        kpiTitle4: 'Units Needing Help',
+        kpiTitle5: 'Utility Outage Reports',
+        lblKpiPower: 'Power',
+        lblKpiWater: 'Water',
+        kpiFooter5: 'Reported by residents & patrol checks',
+        mapClickHintAdmin: '💡 Click any unit cell to view details or <strong>enter/override status on behalf of the resident (Admin Proxy)<\/strong>',
+        mapClickHintPublic: '💡 Click any unit cell to view basic status (personal notes are hidden for privacy)',
+        fltAll: 'All Units',
+        fltSafe: '🟢 Safe',
+        fltHelp: '🔴 Need Help',
+        fltEvac: '🟣 Evacuated',
+        fltPending: '🟡 Unconfirmed',
+        legBlueBox: 'Blue Border',
+        legBlueText: 'Email Registered',
+        legOrangeBox: 'Orange Border',
+        legOrangeText: 'HOA Board / Admin Unit',
+        supportEmpty: 'No units currently reporting "Need Help" or "Evacuated".',
+        settingsCardHeading: '⚙️ System Settings & Drill Controls',
+        lblSysModeTitle: 'System Operating Mode',
+        lblSysModeDesc: 'Tags all records as "Drill Mode" during scheduled exercises.',
+        btnTrainingActive: 'Drill Mode Active',
+        btnEmergencyActive: '🚨 Emergency Mode',
+        lblPubMapTitle: 'Public Status Map for Residents (Read-Only)',
+        lblPubMapDesc: 'Allows residents to view building-wide status with personal notes masked.',
+        btnPubMapOn: 'Public (Notes Masked)',
+        btnPubMapOff: 'Private (Admins Only)',
+        lblAnnouncementInput: 'HQ Announcement Message for Residents',
+        btnUpdateAnnouncement: '📣 Update Announcement',
+        btnLoadSampleData: '🧪 Load Sample Drill Data',
+        btnResetAll: '🧹 Reset All Unit Responses',
+        lblModalUnit: 'Unit Number:',
+        lblModalRole: 'Role / Type:',
+        lblModalEmail: 'Notification Email:',
+        lblModalUpdated: 'Last Updated:',
+        lblOverrideSectionTitle: '✏️ Admin Proxy Entry / Status Override',
+        lblOverrideStatus: 'Safety Status',
+        lblOvSafe: '🟢Safe',
+        lblOvHelp: '🔴Help',
+        lblOvEvac: '🟣Evac',
+        lblOvPend: '🟡Pending',
+        lblOvTotalMembers: 'Total Members',
+        lblOvSafeMembers: 'Safe Members',
+        lblOvLifeline: 'Utility Outages',
+        lblOvPower: '⚡ Power Out',
+        lblOvWater: '💧 Water Out',
+        lblOvMemo: 'Verification Note / Proxy Reason',
+        btnTplVisit: 'Door/Intercom Checked',
+        tplVisitText: '[Admin Proxy] Confirmed all safe via door/intercom check',
+        btnTplPhone: 'Phone/Message Checked',
+        tplPhoneText: '[Admin Proxy] Confirmed safe via phone/message contact',
+        btnSaveOverride: '💾 Save / Override Unit Status',
+        closeBtn: 'Close',
+        lblReadOnlyPrivacy: '* For privacy protection, personal notes and contact details are hidden in Resident Public View.',
+        pkModalTitle: 'Google Account & Passkey Admin Verification',
+        pkModalDesc: 'Unit selection is disabled. <strong>The system automatically binds you to your registered unit (1-to-1) based on your verified Google email<\/strong>.',
+        lblPkEmailInput: 'Your Google Email Address (Registered with HOA Board Group)',
+        phPkEmailInput: 'Enter your registered Google email address',
+        lblDemoEmailHint: 'Demo test emails: <code>board401@example.com<\/code> (Unit 401) or <code>board103@example.com<\/code> (Unit 103)',
+        btnFillDemoAdminEmail: 'Auto-fill Unit 401',
+        pkRuleHeading: 'Anti-Spoofing 1-to-1 Account Binding Policy',
+        pkRule1: 'Verifies identity via Google OAuth / Device Passkey (Touch ID, Face ID, Windows Hello).',
+        pkRule2: 'Automatically locks your session to your own unit number; impersonating another board member is impossible.',
+        pkRule3: 'All login attempts and proxy edits are logged to the Google Drive audit trail.',
+        btnConfirmPasskeyText: '👆 Verify with Passkey & Enter Dashboard',
+        cancelBtn: 'Cancel',
+        termModalHeading: '📅 Annual Term, 1-to-1 Admin Mapping & URL Rotation Guide',
+        lblTermTitleInput: 'Current Board Term / Fiscal Year',
+        lblAdminGroupInput: 'Linked Google Group Email',
+        lblAdminMapTextarea: '1-to-1 Mapping of "Unit Number : Google Email" for Board Admins',
+        lblAdminMapHint: '* Enter one unit per line as <code>Unit:Email<\/code> (Matched against <code>m_users<\/code> & Google Group in GAS production).',
+        urlGuideTitle: '🔒 Annual URL Rotation (Revoking Previous Year URL) in 5 Minutes',
+        urlGuideStep1: 'Open "Apps Script" from Google Sheets or Google Drive.',
+        urlGuideStep2: 'Click "Deploy > Manage deployments" in the top right.',
+        urlGuideStep3: 'Click "Archive" next to last year\'s deployment -> Immediately blocks access via the old URL.',
+        urlGuideStep4: 'Click "New deployment" to issue a fresh Web App URL for the new board term.',
+        btnSaveTermConfig: '💾 Save Term & 1-to-1 Admin Mapping',
+        printToolbarTitle: '🖨️ A4 Single-Page Drill / Emergency Report Preview',
+        btnLayoutLandscape: '📐 A4 Landscape (Notice Board)',
+        btnLayoutPortrait: '📄 A4 Portrait (Filing / Binder)',
+        btnExecutePrint: '🖨️ Print / Save as PDF',
+        btnClosePrintPreview: '✕ Close',
+        reportMainTitle: 'Building-Wide Resident Safety Status Report',
+        repMetaTimeLbl: 'Generated:',
+        repMetaModeLbl: 'Mode:',
+        repMetaTargetLbl: 'Scope:',
+        repKpiLbl1: 'Email Registered',
+        repKpiLbl2: 'Response Rate (Units)',
+        repKpiLbl3: 'Confirmed Safe',
+        repKpiLbl4: 'Need Help / Evacuated',
+        repKpiLbl5: 'Utility Outages',
+        repKpiLifelineSub: 'Resident & patrol reports',
+        repMapLegend: '[Legend] 🟢Safe 🔴Need Help 🟣Evacuated 🟡Unconfirmed | ✉Blue:Email Reg 👑Orange:Board Admin [P]:Admin Proxy',
+        repSupportPriorityLbl: 'Priority Follow-up',
+        repNotesTitle: '📣 Emergency HQ Notes & Drill Summary',
+        repNotesEditHint: '(Editable before printing)',
+        repFooterLeft: APP_CONFIG.buildingNameEn + ' Resident Safety System — Official Drill & Emergency Record',
+        repFooterRight: 'Verified by (Signature): ________________________',
+        defaultAnnouncement: '[Safety Drill] We are currently conducting a building-wide earthquake safety drill. Please report your household safety status promptly.'
+      }
+    };
+
+    var ADMIN_ROOM_TO_EMAIL = Object.assign({}, APP_CONFIG.adminRoomToEmail);
+    var ADMIN_ROOMS = Object.keys(ADMIN_ROOM_TO_EMAIL);
+
+    // URLパラメータ (?lang=en または ?lang=ja) から初期言語を判定
+    function detectInitialLang() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var qLang = (params.get('lang') || '').toLowerCase();
+        if (qLang === 'en' || qLang === 'ja') return qLang;
+        var saved = localStorage.getItem('condo_oss_lang');
+        if (saved === 'en' || saved === 'ja') return saved;
+      } catch (e) {}
+      return 'ja';
+    }
+
+    function t(key) {
+      var dict = I18N[state.lang] || I18N.ja;
+      return dict[key] || I18N.ja[key] || key;
+    }
+
+    function translateStatusLabel(rawStatus) {
+      if (state.lang !== 'en') return rawStatus;
+      if (rawStatus === '無事') return 'Safe';
+      if (rawStatus === '要支援') return 'Need Help';
+      if (rawStatus === '避難中') return 'Evacuated';
+      return 'Unconfirmed';
+    }
+
+    function resolveAdminRoomByEmail(emailInput) {
+      if (!emailInput) return null;
+      var clean = String(emailInput).trim().toLowerCase();
+      for (var r in ADMIN_ROOM_TO_EMAIL) {
+        if (String(ADMIN_ROOM_TO_EMAIL[r]).trim().toLowerCase() === clean) {
+          return r;
+        }
+      }
+      return null;
+    }
+
+    function formatAdminEmailMapText() {
+      return Object.keys(ADMIN_ROOM_TO_EMAIL).map(function(r) {
+        return r + ':' + ADMIN_ROOM_TO_EMAIL[r];
+      }).join('\n');
+    }
+
+    function parseAdminEmailMapText(text) {
+      var map = {};
+      String(text || '').split('\n').forEach(function(line) {
+        var trimmed = line.trim();
+        if (!trimmed) return;
+        var idx = trimmed.indexOf(':');
+        if (idx > 0) {
+          var room = trimmed.substring(0, idx).trim();
+          var email = trimmed.substring(idx + 1).trim().toLowerCase();
+          if (room && email) map[room] = email;
+        }
+      });
+      return map;
+    }
+
+    function generateDefaultUsers() {
+      var users = [];
+      var floorConfig = APP_CONFIG.floorConfig;
+      var floors = Object.keys(floorConfig).map(Number).sort(function(a, b) { return a - b; });
+      for (var idx = 0; idx < floors.length; idx++) {
+        var f = floors[idx];
+        var count = floorConfig[f];
+        for (var i = 1; i <= count; i++) {
+          var room = f + (i < 10 ? '0' + i : '' + i);
+          var isAdmin = ADMIN_ROOMS.indexOf(room) !== -1;
+          var hasReg = isAdmin || ((i % 5) !== 0);
+          users.push({
+            roomNumber: room,
+            ownerName: '',
+            primaryEmail: ADMIN_ROOM_TO_EMAIL[room] || '',
+            memberCount: 2,
+            pinCode: '0' + room,
+            isAdmin: isAdmin,
+            hasRegisteredEmail: hasReg
+          });
+        }
+      }
+      return users;
+    }
+
+    var state = {
+      lang: detectInitialLang(),
+      termTitle: APP_CONFIG.termTitleJa,
+      adminGroupEmail: APP_CONFIG.adminGroupEmail,
+      users: generateDefaultUsers(),
+      safetyAnswers: {},
+      currentUser: null,
+      authenticatedAdminEmail: null,
+      isAdminAuthenticated: false,
+      isAdminView: false,
+      allowResidentPublicMap: true,
+      isTrainingMode: true,
+      currentFilter: 'all',
+      printOrientation: 'landscape',
+      selectedModalRoom: null,
+      announcement: I18N.ja.defaultAnnouncement
+    };
+
+    function isStandaloneDemoEnv() {
+      return (typeof google === 'undefined' || !google.script || !google.script.run);
+    }
+
+    function loadSavedState() {
+      try {
+        var savedAns = localStorage.getItem('condo_oss_answers');
+        if (savedAns) state.safetyAnswers = JSON.parse(savedAns);
+        var savedCfg = localStorage.getItem('condo_oss_config');
+        if (savedCfg) {
+          var cfg = JSON.parse(savedCfg);
+          if (cfg.termTitle) state.termTitle = cfg.termTitle;
+          if (typeof cfg.isTrainingMode === 'boolean') state.isTrainingMode = cfg.isTrainingMode;
+          if (typeof cfg.allowResidentPublicMap === 'boolean') state.allowResidentPublicMap = cfg.allowResidentPublicMap;
+          if (cfg.announcement) state.announcement = cfg.announcement;
+          if (cfg.adminRoomToEmail && typeof cfg.adminRoomToEmail === 'object') {
+            ADMIN_ROOM_TO_EMAIL = cfg.adminRoomToEmail;
+            ADMIN_ROOMS = Object.keys(ADMIN_ROOM_TO_EMAIL);
+            state.users = generateDefaultUsers();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('condo_oss_answers', JSON.stringify(state.safetyAnswers));
+        localStorage.setItem('condo_oss_config', JSON.stringify({
+          termTitle: state.termTitle,
+          isTrainingMode: state.isTrainingMode,
+          allowResidentPublicMap: state.allowResidentPublicMap,
+          announcement: state.announcement,
+          adminRoomToEmail: ADMIN_ROOM_TO_EMAIL
+        }));
+      } catch (e) {}
+    }
+
+    function writeAuditLog(actionType, actor, targetRoom, detail) {
+      var entry = {
+        timestamp: new Date().toLocaleString(state.lang === 'en' ? 'en-US' : 'ja-JP'),
+        term: state.termTitle,
+        mode: state.isTrainingMode ? 'Drill' : 'Emergency',
+        actionType: actionType,
+        actor: actor || 'Unauthenticated',
+        targetRoom: targetRoom || '-',
+        detail: detail || ''
+      };
+      try {
+        var logs = JSON.parse(localStorage.getItem('condo_oss_audit_logs') || '[]');
+        logs.push(entry);
+        localStorage.setItem('condo_oss_audit_logs', JSON.stringify(logs));
+      } catch (e) {}
+
+      if (!isStandaloneDemoEnv()) {
+        google.script.run.recordAuditLog(entry);
+      }
+    }
+
+    function applyTranslationsToStaticDom() {
+      document.documentElement.lang = state.lang;
+      document.getElementById('btnLangToggle').innerText = t('langBtn');
+      document.getElementById('demoBannerTitle').innerText = t('demoBannerTitle');
+      document.getElementById('demoBannerSub').innerText = t('demoBannerSub');
+      document.getElementById('btnDemoAdminJump').innerText = t('demoAdminBtn');
+      document.getElementById('btnDemoResidentJump').innerText = t('demoResidentBtn');
+      document.getElementById('btnDemoSampleLoad').innerText = t('demoSampleBtn');
+      document.getElementById('btnDemoPrintJump').innerText = t('demoPrintBtn');
+
+      document.getElementById('headerAppTitle').innerText = t('headerAppTitle');
+      document.getElementById('onlineStatusLabel').innerText = t('onlineStatus');
+      document.getElementById('btnLogout').innerText = t('logoutBtn');
+
+      document.getElementById('loginBadgeOrg').innerText = t('loginBadgeOrg');
+      document.getElementById('loginMainTitle').innerText = t('loginMainTitle');
+      document.getElementById('loginSubTitle').innerText = t('loginSubTitle');
+      document.getElementById('tabResidentLogin').innerText = t('tabResidentLogin');
+      document.getElementById('tabAdminLogin').innerText = t('tabAdminLogin');
+      document.getElementById('lblInputRoom').innerText = t('lblInputRoom');
+      document.getElementById('inputRoom').placeholder = t('phInputRoom');
+      document.getElementById('lblInputPin').innerText = t('lblInputPin');
+      document.getElementById('inputPin').placeholder = t('phInputPin');
+      document.getElementById('lblPinHint').innerText = t('lblPinHint');
+      document.getElementById('btnResidentSubmitLogin').innerText = t('btnResidentSubmitLogin');
+      document.getElementById('adminAuthBoxTitle').innerText = t('adminAuthBoxTitle');
+      document.getElementById('adminAuthBoxDesc').innerHTML = t('adminAuthBoxDesc');
+      document.getElementById('btnStartPasskeyText').innerText = t('btnStartPasskeyText');
+      document.getElementById('adminAuthAuditNote').innerText = t('adminAuthAuditNote');
+
+      document.getElementById('residentBannerHeader').innerText = t('residentBannerHeader');
+      document.getElementById('lblResStep1').innerText = t('lblResStep1');
+      document.getElementById('lblStatusSafeRadio').innerText = t('lblStatusSafeRadio');
+      document.getElementById('lblStatusHelpRadio').innerText = t('lblStatusHelpRadio');
+      document.getElementById('lblStatusEvacRadio').innerText = t('lblStatusEvacRadio');
+      document.getElementById('lblResTotalMembers').innerText = t('lblResTotalMembers');
+      document.getElementById('lblResSafeMembers').innerText = t('lblResSafeMembers');
+      document.getElementById('lblResStep2').innerText = t('lblResStep2');
+      document.getElementById('lblCheckPower').innerText = t('lblCheckPower');
+      document.getElementById('lblCheckWater').innerText = t('lblCheckWater');
+      document.getElementById('lblResStep3').innerText = t('lblResStep3');
+      document.getElementById('inputMemo').placeholder = t('phInputMemo');
+      document.getElementById('btnSubmitResidentAnswer').innerText = t('btnSubmitResidentAnswer');
+
+      document.getElementById('dashboardMainHeading').innerText = t('dashboardMainHeading');
+      document.getElementById('btnQuickProxyInput').innerText = t('btnQuickProxyInput');
+      document.getElementById('btnOpenTermModal').innerText = t('btnOpenTermModal');
+      document.getElementById('btnOpenPrintPreview').innerText = t('btnOpenPrintPreview');
+
+      document.getElementById('kpiTitle1').innerText = t('kpiTitle1');
+      document.getElementById('kpiTitle2').innerText = t('kpiTitle2');
+      document.getElementById('kpiTitle3').innerText = t('kpiTitle3');
+      document.getElementById('kpiTitle4').innerText = t('kpiTitle4');
+      document.getElementById('kpiTitle5').innerText = t('kpiTitle5');
+      document.getElementById('lblKpiPower').innerText = t('lblKpiPower');
+      document.getElementById('lblKpiWater').innerText = t('lblKpiWater');
+      document.getElementById('kpiFooter5').innerText = t('kpiFooter5');
+
+      document.getElementById('fltAll').innerText = t('fltAll');
+      document.getElementById('fltSafe').innerText = t('fltSafe');
+      document.getElementById('fltHelp').innerText = t('fltHelp');
+      document.getElementById('fltEvac').innerText = t('fltEvac');
+      document.getElementById('fltPending').innerText = t('fltPending');
+      document.getElementById('legBlueBox').innerText = t('legBlueBox');
+      document.getElementById('legBlueText').innerText = t('legBlueText');
+      document.getElementById('legOrangeBox').innerText = t('legOrangeBox');
+      document.getElementById('legOrangeText').innerText = t('legOrangeText');
+
+      document.getElementById('settingsCardHeading').innerText = t('settingsCardHeading');
+      document.getElementById('lblSysModeTitle').innerText = t('lblSysModeTitle');
+      document.getElementById('lblSysModeDesc').innerText = t('lblSysModeDesc');
+      document.getElementById('lblPubMapTitle').innerText = t('lblPubMapTitle');
+      document.getElementById('lblPubMapDesc').innerText = t('lblPubMapDesc');
+      document.getElementById('lblAnnouncementInput').innerText = t('lblAnnouncementInput');
+      document.getElementById('btnUpdateAnnouncement').innerText = t('btnUpdateAnnouncement');
+      document.getElementById('btnLoadSampleData').innerText = t('btnLoadSampleData');
+      document.getElementById('btnResetAll').innerText = t('btnResetAll');
+
+      document.getElementById('lblModalUnit').innerText = t('lblModalUnit');
+      document.getElementById('lblModalRole').innerText = t('lblModalRole');
+      document.getElementById('lblModalEmail').innerText = t('lblModalEmail');
+      document.getElementById('lblModalUpdated').innerText = t('lblModalUpdated');
+      document.getElementById('lblOverrideSectionTitle').innerText = t('lblOverrideSectionTitle');
+      document.getElementById('lblOverrideStatus').innerText = t('lblOverrideStatus');
+      document.getElementById('lblOvSafe').innerText = t('lblOvSafe');
+      document.getElementById('lblOvHelp').innerText = t('lblOvHelp');
+      document.getElementById('lblOvEvac').innerText = t('lblOvEvac');
+      document.getElementById('lblOvPend').innerText = t('lblOvPend');
+      document.getElementById('lblOvTotalMembers').innerText = t('lblOvTotalMembers');
+      document.getElementById('lblOvSafeMembers').innerText = t('lblOvSafeMembers');
+      document.getElementById('lblOvLifeline').innerText = t('lblOvLifeline');
+      document.getElementById('lblOvPower').innerText = t('lblOvPower');
+      document.getElementById('lblOvWater').innerText = t('lblOvWater');
+      document.getElementById('lblOvMemo').innerText = t('lblOvMemo');
+      document.getElementById('btnTplVisit').innerText = t('btnTplVisit');
+      document.getElementById('btnTplPhone').innerText = t('btnTplPhone');
+      document.getElementById('btnSaveOverride').innerText = t('btnSaveOverride');
+      document.getElementById('closeModalBtn').innerText = t('closeBtn');
+      document.getElementById('closeModalBtnReadOnly').innerText = t('closeBtn');
+      document.getElementById('lblReadOnlyPrivacy').innerText = t('lblReadOnlyPrivacy');
+
+      document.getElementById('pkModalTitle').innerText = t('pkModalTitle');
+      document.getElementById('pkModalDesc').innerHTML = t('pkModalDesc');
+      document.getElementById('lblPkEmailInput').innerText = t('lblPkEmailInput');
+      document.getElementById('inputAdminEmail').placeholder = t('phPkEmailInput');
+      document.getElementById('lblDemoEmailHint').innerHTML = t('lblDemoEmailHint');
+      document.getElementById('btnFillDemoAdminEmail').innerText = t('btnFillDemoAdminEmail');
+      document.getElementById('pkRuleHeading').innerText = t('pkRuleHeading');
+      document.getElementById('pkRule1').innerText = t('pkRule1');
+      document.getElementById('pkRule2').innerText = t('pkRule2');
+      document.getElementById('pkRule3').innerText = t('pkRule3');
+      document.getElementById('btnConfirmPasskeyText').innerText = t('btnConfirmPasskeyText');
+      document.getElementById('btnCancelPasskey').innerText = t('cancelBtn');
+
+      document.getElementById('termModalHeading').innerText = t('termModalHeading');
+      document.getElementById('lblTermTitleInput').innerText = t('lblTermTitleInput');
+      document.getElementById('lblAdminGroupInput').innerText = t('lblAdminGroupInput');
+      document.getElementById('lblAdminMapTextarea').innerText = t('lblAdminMapTextarea');
+      document.getElementById('lblAdminMapHint').innerHTML = t('lblAdminMapHint');
+      document.getElementById('urlGuideTitle').innerText = t('urlGuideTitle');
+      document.getElementById('urlGuideStep1').innerText = t('urlGuideStep1');
+      document.getElementById('urlGuideStep2').innerText = t('urlGuideStep2');
+      document.getElementById('urlGuideStep3').innerText = t('urlGuideStep3');
+      document.getElementById('urlGuideStep4').innerText = t('urlGuideStep4');
+      document.getElementById('btnSaveTermConfig').innerText = t('btnSaveTermConfig');
+      document.getElementById('btnCloseTermModal').innerText = t('closeBtn');
+
+      document.getElementById('printToolbarTitle').innerText = t('printToolbarTitle');
+      document.getElementById('btnLayoutLandscape').innerText = t('btnLayoutLandscape');
+      document.getElementById('btnLayoutPortrait').innerText = t('btnLayoutPortrait');
+      document.getElementById('btnExecutePrint').innerText = t('btnExecutePrint');
+      document.getElementById('btnClosePrintPreview').innerText = t('btnClosePrintPreview');
+      document.getElementById('reportMainTitle').innerText = t('reportMainTitle');
+      document.getElementById('repMetaTimeLbl').innerText = t('repMetaTimeLbl');
+      document.getElementById('repMetaModeLbl').innerText = t('repMetaModeLbl');
+      document.getElementById('repMetaTargetLbl').innerText = t('repMetaTargetLbl');
+      document.getElementById('repKpiLbl1').innerText = t('repKpiLbl1');
+      document.getElementById('repKpiLbl2').innerText = t('repKpiLbl2');
+      document.getElementById('repKpiLbl3').innerText = t('repKpiLbl3');
+      document.getElementById('repKpiLbl4').innerText = t('repKpiLbl4');
+      document.getElementById('repKpiLbl5').innerText = t('repKpiLbl5');
+      document.getElementById('repKpiLifelineSub').innerText = t('repKpiLifelineSub');
+      document.getElementById('repMapLegend').innerText = t('repMapLegend');
+      document.getElementById('repSupportPriorityLbl').innerText = t('repSupportPriorityLbl');
+      document.getElementById('repNotesTitle').innerText = t('repNotesTitle');
+      document.getElementById('repNotesEditHint').innerText = t('repNotesEditHint');
+      document.getElementById('repFooterLeft').innerText = t('repFooterLeft');
+      document.getElementById('repFooterRight').innerText = t('repFooterRight');
+    }
+
+    function toggleLanguage() {
+      var prevDefaultAnn = t('defaultAnnouncement');
+      state.lang = (state.lang === 'ja') ? 'en' : 'ja';
+      try { localStorage.setItem('condo_oss_lang', state.lang); } catch (e) {}
+      if (!state.announcement || state.announcement === prevDefaultAnn) {
+        state.announcement = t('defaultAnnouncement');
+      }
+      applyTranslationsToStaticDom();
+      render();
+      if (!document.getElementById('printPreviewModal').classList.contains('hidden')) {
+        openPrintPreview(state.printOrientation);
+      }
+    }
+
+    function updateResolvedRoomPreview() {
+      var emailVal = document.getElementById('inputAdminEmail').value.trim();
+      var previewEl = document.getElementById('resolvedRoomPreview');
+      var errBox = document.getElementById('passkeyErrorBox');
+      errBox.classList.add('hidden');
+
+      if (!emailVal) {
+        previewEl.classList.add('hidden');
+        return;
+      }
+
+      previewEl.classList.remove('hidden');
+      var resolvedRoom = resolveAdminRoomByEmail(emailVal);
+      if (resolvedRoom) {
+        previewEl.style.background = '#f0fdfa';
+        previewEl.style.color = '#0f766e';
+        previewEl.style.borderColor = '#99f6e4';
+        previewEl.innerHTML = state.lang === 'en'
+          ? '✅ Verified 1-to-1 Bound Unit: <strong>Unit ' + resolvedRoom + '<\/strong> (Impersonation blocked)'
+          : '✅ 認証アカウント紐付け先: <strong>' + resolvedRoom + '号室<\/strong> （他室の選択・なりすまし不可）';
+      } else {
+        previewEl.style.background = '#fef2f2';
+        previewEl.style.color = '#dc2626';
+        previewEl.style.borderColor = '#fca5a5';
+        previewEl.innerHTML = state.lang === 'en'
+          ? '🚫 This Google email is not registered in the HOA Board Admin list'
+          : '🚫 このGoogleアドレスは理事会（管理者マスタ）に登録されていません';
+      }
+    }
+
+    window.onload = function() {
+      loadSavedState();
+      if (isStandaloneDemoEnv()) {
+        document.getElementById('demoShowcaseBar').classList.remove('hidden');
+        document.getElementById('demoAdminQuickHint').classList.remove('hidden');
+        if (Object.keys(state.safetyAnswers).length === 0) {
+          populateRealisticTrainingData(true);
+        }
+      }
+
+      applyTranslationsToStaticDom();
+      render();
+      fetchInitialData();
+
+      document.getElementById('btnLangToggle').onclick = function() {
+        toggleLanguage();
+      };
+
+      // Demo Showcase Bar quick buttons
+      document.getElementById('btnDemoAdminJump').onclick = function() {
+        finalizeAdminLogin('401', ADMIN_ROOM_TO_EMAIL['401'] || 'board401@example.com');
+      };
+      document.getElementById('btnDemoResidentJump').onclick = function() {
+        loginAsResident('305', '0305');
+      };
+      document.getElementById('btnDemoSampleLoad').onclick = function() {
+        populateRealisticTrainingData(false);
+        if (!state.isAdminAuthenticated) {
+          finalizeAdminLogin('401', ADMIN_ROOM_TO_EMAIL['401'] || 'board401@example.com');
+        }
+      };
+      document.getElementById('btnDemoPrintJump').onclick = function() {
+        if (!state.isAdminAuthenticated) {
+          finalizeAdminLogin('401', ADMIN_ROOM_TO_EMAIL['401'] || 'board401@example.com');
+        }
+        openPrintPreview('landscape');
+      };
+      document.getElementById('btnFillDemoAdminEmail').onclick = function() {
+        document.getElementById('inputAdminEmail').value = ADMIN_ROOM_TO_EMAIL['401'] || 'board401@example.com';
+        updateResolvedRoomPreview();
+      };
+
+      document.getElementById('tabResidentLogin').onclick = function() {
+        document.getElementById('tabResidentLogin').classList.add('active');
+        document.getElementById('tabAdminLogin').classList.remove('active');
+        document.getElementById('residentLoginPane').classList.remove('hidden');
+        document.getElementById('adminLoginPane').classList.add('hidden');
+      };
+      document.getElementById('tabAdminLogin').onclick = function() {
+        document.getElementById('tabAdminLogin').classList.add('active');
+        document.getElementById('tabResidentLogin').classList.remove('active');
+        document.getElementById('adminLoginPane').classList.remove('hidden');
+        document.getElementById('residentLoginPane').classList.add('hidden');
+      };
+
+      document.getElementById('inputRoom').oninput = function(e) {
+        var v = e.target.value.trim();
+        if (v.length === 3) {
+          document.getElementById('inputPin').value = '0' + v;
+        }
+      };
+
+      document.getElementById('loginForm').onsubmit = function(e) {
+        e.preventDefault();
+        loginAsResident(
+          document.getElementById('inputRoom').value.trim(),
+          document.getElementById('inputPin').value.trim()
+        );
+      };
+
+      document.getElementById('btnStartPasskeyAuth').onclick = function() {
+        document.getElementById('inputAdminEmail').value = '';
+        updateResolvedRoomPreview();
+        document.getElementById('passkeyModal').classList.remove('hidden');
+      };
+      document.getElementById('inputAdminEmail').oninput = function() {
+        updateResolvedRoomPreview();
+      };
+      document.getElementById('btnCancelPasskey').onclick = function() {
+        document.getElementById('passkeyModal').classList.add('hidden');
+      };
+      document.getElementById('btnConfirmPasskey').onclick = function() {
+        executePasskeyAdminLogin();
+      };
+
+      document.getElementById('answerForm').onsubmit = function(e) {
+        e.preventDefault();
+        submitResidentAnswer();
+      };
+
+      document.getElementById('btnSwitchView').onclick = function() {
+        state.isAdminView = !state.isAdminView;
+        render();
+      };
+      document.getElementById('btnResidentPublicMap').onclick = function() {
+        state.isAdminView = !state.isAdminView;
+        render();
+      };
+      document.getElementById('btnLogout').onclick = function() {
+        state.currentUser = null;
+        state.authenticatedAdminEmail = null;
+        state.isAdminAuthenticated = false;
+        state.isAdminView = false;
+        render();
+      };
+
+      document.getElementById('closeModalBtn').onclick = function() {
+        document.getElementById('roomModal').classList.add('hidden');
+      };
+      document.getElementById('closeModalBtnReadOnly').onclick = function() {
+        document.getElementById('roomModal').classList.add('hidden');
+      };
+
+      document.getElementById('btnTplVisit').onclick = function() {
+        document.getElementById('overrideMemo').value = t('tplVisitText');
+      };
+      document.getElementById('btnTplPhone').onclick = function() {
+        document.getElementById('overrideMemo').value = t('tplPhoneText');
+      };
+
+      document.getElementById('btnSaveOverride').onclick = function() {
+        saveAdminOverride();
+      };
+
+      document.getElementById('btnQuickProxyInput').onclick = function() {
+        var promptMsg = state.lang === 'en'
+          ? 'Enter Unit Number (e.g., 101 - 708) for Admin Proxy Entry:'
+          : '代行入力・上書きする部屋番号（101〜708）を入力してください:';
+        var r = prompt(promptMsg, '305');
+        if (!r) return;
+        var clean = r.trim();
+        var u = state.users.find(function(x) { return x.roomNumber === clean; });
+        if (!u) {
+          alert(state.lang === 'en' ? 'Unit ' + clean + ' does not exist.' : '指定された部屋番号（' + clean + '）は存在しません。');
+          return;
+        }
+        openRoomModal(u, state.safetyAnswers[u.roomNumber]);
+      };
+
+      document.getElementById('btnOpenTermModal').onclick = function() {
+        document.getElementById('inputTermTitle').value = state.termTitle;
+        document.getElementById('inputAdminEmailMap').value = formatAdminEmailMapText();
+        document.getElementById('termModal').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseTermModal').onclick = function() {
+        document.getElementById('termModal').classList.add('hidden');
+      };
+      document.getElementById('btnSaveTermConfig').onclick = function() {
+        state.termTitle = document.getElementById('inputTermTitle').value.trim() || APP_CONFIG.termTitleJa;
+        var parsedMap = parseAdminEmailMapText(document.getElementById('inputAdminEmailMap').value);
+        if (Object.keys(parsedMap).length > 0) {
+          ADMIN_ROOM_TO_EMAIL = parsedMap;
+          ADMIN_ROOMS = Object.keys(ADMIN_ROOM_TO_EMAIL);
+        }
+        state.users = generateDefaultUsers();
+        saveState();
+        render();
+        document.getElementById('termModal').classList.add('hidden');
+        alert(state.lang === 'en'
+          ? 'Updated Term & 1-to-1 Admin Mapping (' + ADMIN_ROOMS.length + ' admins).'
+          : '年度および管理者（' + ADMIN_ROOMS.length + '名）の「部屋番号 ⇔ Googleメールアドレス」1対1紐付け設定を更新しました。');
+      };
+
+      var filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          filterBtns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          state.currentFilter = btn.getAttribute('data-filter');
+          renderAdminDashboard();
+        };
+      });
+
+      document.getElementById('btnToggleTraining').onclick = function() {
+        if (!state.isAdminAuthenticated) return;
+        state.isTrainingMode = !state.isTrainingMode;
+        saveState();
+        render();
+        if (!isStandaloneDemoEnv()) {
+          google.script.run.toggleTrainingMode(state.isTrainingMode);
+        }
+      };
+
+      document.getElementById('btnTogglePublicView').onclick = function() {
+        if (!state.isAdminAuthenticated) return;
+        state.allowResidentPublicMap = !state.allowResidentPublicMap;
+        saveState();
+        render();
+      };
+
+      document.getElementById('btnUpdateAnnouncement').onclick = function() {
+        if (!state.isAdminAuthenticated) return;
+        var msg = document.getElementById('inputAnnouncement').value;
+        state.announcement = msg;
+        saveState();
+        alert(state.lang === 'en' ? 'Announcement updated.' : '住民向けお知らせメッセージを更新しました。');
+        if (!isStandaloneDemoEnv()) {
+          google.script.run.updateAnnouncement(msg);
+        }
+      };
+
+      document.getElementById('btnLoadSampleData').onclick = function() {
+        if (!state.isAdminAuthenticated) return;
+        populateRealisticTrainingData(false);
+      };
+
+      document.getElementById('btnResetAll').onclick = function() {
+        if (!state.isAdminAuthenticated) return;
+        var confirmMsg = state.lang === 'en'
+          ? 'Are you sure you want to reset all household safety responses?'
+          : '全世帯の安否回答データをリセットしますか？';
+        if (confirm(confirmMsg)) {
+          state.safetyAnswers = {};
+          saveState();
+          renderAdminDashboard();
+          if (!isStandaloneDemoEnv()) {
+            google.script.run.resetAllAnswers();
+          }
+        }
+      };
+
+      document.getElementById('btnOpenPrintPreview').onclick = function() {
+        openPrintPreview('landscape');
+      };
+      document.getElementById('btnLayoutLandscape').onclick = function() {
+        setPrintOrientation('landscape');
+      };
+      document.getElementById('btnLayoutPortrait').onclick = function() {
+        setPrintOrientation('portrait');
+      };
+      document.getElementById('btnExecutePrint').onclick = function() {
+        window.print();
+      };
+      document.getElementById('btnClosePrintPreview').onclick = function() {
+        document.getElementById('printPreviewModal').classList.add('hidden');
+      };
+    };
+
+    function fetchInitialData() {
+      if (isStandaloneDemoEnv()) return;
+      google.script.run.withSuccessHandler(function(res) {
+        if (res && res.success) {
+          if (res.users && res.users.length > 0) state.users = res.users;
+          if (res.safetyAnswers) state.safetyAnswers = res.safetyAnswers;
+          if (typeof res.isTrainingMode !== 'undefined') state.isTrainingMode = res.isTrainingMode;
+          if (res.announcement) state.announcement = res.announcement;
+          render();
+        }
+      }).getInitialData();
+    }
+
+    function loginAsResident(roomNumber, pinCode) {
+      var cleanRoom = String(roomNumber).trim();
+      var cleanPin = String(pinCode).trim();
+      var user = state.users.find(function(u) { return String(u.roomNumber).trim() === cleanRoom; });
+      var expectedPin1 = '0' + cleanRoom;
+      var expectedPin2 = cleanRoom;
+
+      if (user && (cleanPin === expectedPin1 || cleanPin === expectedPin2 || String(user.pinCode).trim() === cleanPin)) {
+        state.currentUser = user;
+        state.isAdminAuthenticated = false;
+        state.isAdminView = false;
+        writeAuditLog('RESIDENT_LOGIN_SUCCESS', 'Unit ' + cleanRoom + ' (PIN)', cleanRoom, 'Resident login success');
+        render();
+      } else {
+        writeAuditLog('RESIDENT_LOGIN_FAILED', 'Unit ' + cleanRoom + ' (PIN)', cleanRoom, 'PIN mismatch');
+        alert(state.lang === 'en'
+          ? 'Invalid Unit Number or PIN code.\n(Default PIN: 0 + Unit Number)'
+          : '部屋番号またはPINコードが正しくありません。\n(初期PINコード: 0 + 部屋番号)');
+      }
+    }
+
+    function executePasskeyAdminLogin() {
+      var errBox = document.getElementById('passkeyErrorBox');
+      errBox.classList.add('hidden');
+      var emailInput = document.getElementById('inputAdminEmail').value.trim().toLowerCase();
+
+      if (!isStandaloneDemoEnv()) {
+        google.script.run.withSuccessHandler(function(res) {
+          if (!res || !res.isAdmin || !res.roomNumber) {
+            writeAuditLog('ADMIN_LOGIN_REJECTED', (res && res.email) || emailInput || 'Unknown', '-', 'Unregistered Google account rejected');
+            errBox.innerText = state.lang === 'en'
+              ? '🚫 Access Denied: This Google account is not registered as an HOA Board Admin.'
+              : '🚫 認証拒否: 入力されたGoogleアカウントは理事会（管理者マスタ）として登録されていません。';
+            errBox.classList.remove('hidden');
+            return;
+          }
+          finalizeAdminLogin(res.roomNumber, res.email);
+        }).verifyAdminRoleByGoogleSession(emailInput);
+        return;
+      }
+
+      var resolvedRoom = resolveAdminRoomByEmail(emailInput);
+      if (!resolvedRoom) {
+        writeAuditLog('ADMIN_LOGIN_REJECTED', emailInput || 'Empty', '-', 'Unregistered email rejected');
+        errBox.innerText = state.lang === 'en'
+          ? '🚫 Access Denied: This Google email is not registered as an HOA Board Admin. (Try board401@example.com in Demo)'
+          : '🚫 認証拒否: 入力されたGoogleアカウントは理事会（管理者マスタ）に登録されていません。（デモでは board401@example.com をお試しください）';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      finalizeAdminLogin(resolvedRoom, emailInput);
+    }
+
+    function finalizeAdminLogin(resolvedRoom, verifiedEmail) {
+      var adminUser = state.users.find(function(u) { return String(u.roomNumber) === String(resolvedRoom); });
+      if (!adminUser) return;
+
+      state.currentUser = adminUser;
+      state.authenticatedAdminEmail = verifiedEmail;
+      state.isAdminAuthenticated = true;
+      state.isAdminView = true;
+      writeAuditLog('ADMIN_LOGIN_SUCCESS', 'Unit ' + resolvedRoom + ' (' + verifiedEmail + ')', resolvedRoom, 'Admin Passkey verified');
+      document.getElementById('passkeyModal').classList.add('hidden');
+      render();
+    }
+
+    function submitResidentAnswer() {
+      if (!state.currentUser) return;
+      var status = document.querySelector('input[name="status"]:checked').value;
+      var memberCount = parseInt(document.getElementById('inputMemberCount').value) || 1;
+      var safeCount = parseInt(document.getElementById('inputSafeCount').value) || 0;
+      var isPowerOutage = document.getElementById('checkPower').checked;
+      var isWaterOutage = document.getElementById('checkWater').checked;
+      var memo = document.getElementById('inputMemo').value;
+
+      var payload = {
+        roomNumber: state.currentUser.roomNumber,
+        safetyStatus: status,
+        memberCount: memberCount,
+        safeCount: safeCount,
+        isPowerOutage: isPowerOutage,
+        isWaterOutage: isWaterOutage,
+        memo: memo,
+        updatedBy: state.lang === 'en' ? 'Self Report (Unit ' + state.currentUser.roomNumber + ')' : '本人回答 (' + state.currentUser.roomNumber + '号室)',
+        isProxy: false,
+        lastUpdated: new Date().toLocaleString(state.lang === 'en' ? 'en-US' : 'ja-JP')
+      };
+
+      state.safetyAnswers[payload.roomNumber] = payload;
+      saveState();
+      writeAuditLog('RESIDENT_SUBMIT_ANSWER', payload.updatedBy, payload.roomNumber, 'Status:' + status + ' Safe:' + safeCount + '/' + memberCount);
+      alert(state.lang === 'en'
+        ? 'Safety report submitted for Unit ' + payload.roomNumber + '. Thank you.'
+        : payload.roomNumber + '号室の安否状況を登録しました。ご協力ありがとうございます。');
+      render();
+
+      if (!isStandaloneDemoEnv()) {
+        google.script.run.submitSafetyAnswer(payload);
+      }
+    }
+
+    function saveAdminOverride() {
+      if (!state.isAdminAuthenticated || !state.selectedModalRoom) return;
+      var roomNum = state.selectedModalRoom.roomNumber;
+      var checkedRadio = document.querySelector('input[name="overrideStatus"]:checked');
+      var status = checkedRadio ? checkedRadio.value : '無事';
+      var actorStr = 'Unit ' + state.currentUser.roomNumber + ' (' + (state.authenticatedAdminEmail || 'Admin') + ')';
+
+      if (status === '未回答') {
+        delete state.safetyAnswers[roomNum];
+        saveState();
+        writeAuditLog('ADMIN_OVERRIDE_RESET_ROOM', actorStr, roomNum, 'Reset unit status to Unconfirmed');
+        document.getElementById('roomModal').classList.add('hidden');
+        renderAdminDashboard();
+        return;
+      }
+
+      var memberCount = parseInt(document.getElementById('overrideMemberCount').value) || 1;
+      var safeCount = parseInt(document.getElementById('overrideSafeCount').value) || 0;
+      var isPowerOutage = document.getElementById('overridePower').checked;
+      var isWaterOutage = document.getElementById('overrideWater').checked;
+      var memo = document.getElementById('overrideMemo').value.trim();
+
+      var defaultProxyMemo = state.lang === 'en' ? '[Admin Proxy] Confirmed safe' : '【管理者代行確認】異常なし';
+      var payload = {
+        roomNumber: roomNum,
+        safetyStatus: status,
+        memberCount: memberCount,
+        safeCount: safeCount,
+        isPowerOutage: isPowerOutage,
+        isWaterOutage: isWaterOutage,
+        memo: memo || defaultProxyMemo,
+        updatedBy: state.lang === 'en'
+          ? 'Admin Proxy (Unit ' + state.currentUser.roomNumber + ': ' + (state.authenticatedAdminEmail || 'Verified') + ')'
+          : '管理者代行 (' + state.currentUser.roomNumber + '号室: ' + (state.authenticatedAdminEmail || 'パスキー認証済') + ')',
+        isProxy: true,
+        lastUpdated: new Date().toLocaleString(state.lang === 'en' ? 'en-US' : 'ja-JP')
+      };
+
+      state.safetyAnswers[roomNum] = payload;
+      saveState();
+      writeAuditLog('ADMIN_PROXY_OVERRIDE', actorStr, roomNum, 'Override -> Status:' + status + ' Safe:' + safeCount + '/' + memberCount + ' Memo:' + payload.memo);
+      document.getElementById('roomModal').classList.add('hidden');
+      renderAdminDashboard();
+
+      if (!isStandaloneDemoEnv()) {
+        google.script.run.submitSafetyAnswer(payload);
+      }
+    }
+
+    function populateRealisticTrainingData(silent) {
+      var sampleAnswers = {};
+      var isEn = (state.lang === 'en');
+      state.users.forEach(function(u, idx) {
+        if (idx % 9 === 0 || idx % 13 === 0) return;
+        var status = '無事';
+        var members = (idx % 4) + 1;
+        var safe = members;
+        var power = false;
+        var water = false;
+        var memo = isEn ? 'All family members are safe.' : '家族全員無事です。';
+        var isProxy = false;
+        var updatedBy = isEn ? 'Self Report (Unit ' + u.roomNumber + ')' : '本人回答 (' + u.roomNumber + '号室)';
+
+        if (u.roomNumber === '305') {
+          status = '要支援';
+          members = 2; safe = 1;
+          memo = isEn
+            ? 'Elderly family member injured leg; need assistance with stairs (elevator stopped).'
+            : '高齢の家族が転倒し足を負傷。エレベーター停止のため階段移動の補助をお願いします。';
+        } else if (u.roomNumber === '102') {
+          status = '要支援';
+          members = 1; safe = 1;
+          water = true;
+          isProxy = true;
+          updatedBy = isEn ? 'Admin Proxy (Unit 401 Verified)' : '管理者代行 (401号室・パスキー認証済)';
+          memo = isEn
+            ? '[Admin Proxy] Checked via intercom. Elderly single resident needs drinking water delivery.'
+            : '【管理者代行】インターホン越しに確認。高齢単身のため飲料水の運搬支援を希望。';
+        } else if (u.roomNumber === '512') {
+          status = '避難中';
+          members = 3; safe = 3;
+          memo = isEn
+            ? 'Evacuated to the designated municipal shelter. Everyone is safe.'
+            : '指定の地域防災拠点（避難所）へ避難しています。全員無事です。';
+        } else if (u.roomNumber === '604') {
+          status = '避難中';
+          members = 2; safe = 2;
+          isProxy = true;
+          updatedBy = isEn ? 'Admin Proxy (Unit 610 Verified)' : '管理者代行 (610号室・パスキー認証済)';
+          memo = isEn
+            ? '[Admin Proxy] Confirmed by phone that residents evacuated to relatives\' home.'
+            : '【管理者代行】電話にて親戚宅へ避難中であることを確認済み。';
+        } else if (u.roomNumber === '408' || u.roomNumber === '703') {
+          power = true;
+          memo = isEn
+            ? 'Breaker tripped (partial power outage), but everyone is safe.'
+            : 'ブレーカーが落ちて一部停電中ですが全員無事です。';
+        }
+
+        sampleAnswers[u.roomNumber] = {
+          roomNumber: u.roomNumber,
+          safetyStatus: status,
+          memberCount: members,
+          safeCount: safe,
+          isPowerOutage: power,
+          isWaterOutage: water,
+          memo: memo,
+          updatedBy: updatedBy,
+          isProxy: isProxy,
+          lastUpdated: new Date().toLocaleString(isEn ? 'en-US' : 'ja-JP')
+        };
+      });
+
+      state.safetyAnswers = sampleAnswers;
+      saveState();
+      if (!silent) render();
+    }
+
+    function render() {
+      var isEn = (state.lang === 'en');
+      document.getElementById('termBadge').innerText = isEn ? APP_CONFIG.termTitleEn : state.termTitle;
+      var tBadge = document.getElementById('trainingBadge');
+      if (state.isTrainingMode) {
+        tBadge.className = 'badge-training';
+        tBadge.innerText = t('trainingModeBadge');
+      } else {
+        tBadge.className = 'badge-emergency';
+        tBadge.innerText = t('emergencyModeBadge');
+      }
+
+      if (!state.currentUser) {
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('residentView').classList.add('hidden');
+        document.getElementById('adminView').classList.add('hidden');
+        document.getElementById('userHeaderLabel').innerText = t('notLoggedIn');
+        document.getElementById('btnSwitchView').classList.add('hidden');
+        document.getElementById('btnResidentPublicMap').classList.add('hidden');
+        document.getElementById('btnLogout').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('btnLogout').classList.remove('hidden');
+
+      if (state.isAdminAuthenticated) {
+        document.getElementById('userHeaderLabel').innerText = isEn
+          ? '🔐 Unit ' + state.currentUser.roomNumber + ' [' + (state.authenticatedAdminEmail || '') + '] (Verified Admin)'
+          : '🔐 ' + state.currentUser.roomNumber + '号室 [' + (state.authenticatedAdminEmail || '') + '] (管理者・本人認証済)';
+        document.getElementById('btnSwitchView').classList.remove('hidden');
+        document.getElementById('btnResidentPublicMap').classList.add('hidden');
+        document.getElementById('btnSwitchView').innerText = state.isAdminView ? t('toResidentInputBtn') : t('toAdminDashBtn');
+      } else {
+        document.getElementById('userHeaderLabel').innerText = isEn
+          ? '🏠 Unit ' + state.currentUser.roomNumber + ' (Resident)'
+          : '🏠 ' + state.currentUser.roomNumber + '号室 (一般世帯ログイン)';
+        document.getElementById('btnSwitchView').classList.add('hidden');
+        if (state.allowResidentPublicMap) {
+          document.getElementById('btnResidentPublicMap').classList.remove('hidden');
+          document.getElementById('btnResidentPublicMap').innerText = state.isAdminView ? t('backToMyReportBtn') : t('toPublicMapBtn');
+        } else {
+          document.getElementById('btnResidentPublicMap').classList.add('hidden');
+          state.isAdminView = false;
+        }
+      }
+
+      if (state.isAdminView && (state.isAdminAuthenticated || state.allowResidentPublicMap)) {
+        document.getElementById('residentView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        renderAdminDashboard();
+      } else {
+        document.getElementById('residentView').classList.remove('hidden');
+        document.getElementById('adminView').classList.add('hidden');
+        renderResidentView();
+      }
+    }
+
+    function renderResidentView() {
+      var isEn = (state.lang === 'en');
+      document.getElementById('residentAnnouncementText').innerText = state.announcement;
+      document.getElementById('residentRoomTitle').innerText = isEn
+        ? 'Unit ' + state.currentUser.roomNumber + ' — Safety Report'
+        : state.currentUser.roomNumber + '号室 安否報告';
+      var ans = state.safetyAnswers[state.currentUser.roomNumber];
+      var badge = document.getElementById('residentStatusBadge');
+
+      if (ans && ans.safetyStatus !== '未回答') {
+        badge.innerText = isEn
+          ? 'Reported: ' + translateStatusLabel(ans.safetyStatus) + (ans.isProxy ? ' (Admin Proxy)' : '')
+          : '回答済: ' + ans.safetyStatus + (ans.isProxy ? ' (管理者代行確認)' : '');
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#166534';
+        var radio = document.querySelector('input[name="status"][value="' + ans.safetyStatus + '"]');
+        if (radio) radio.checked = true;
+        document.getElementById('inputMemberCount').value = ans.memberCount || 1;
+        document.getElementById('inputSafeCount').value = ans.safeCount || 0;
+        document.getElementById('checkPower').checked = !!ans.isPowerOutage;
+        document.getElementById('checkWater').checked = !!ans.isWaterOutage;
+        document.getElementById('inputMemo').value = ans.memo || '';
+      } else {
+        badge.innerText = t('statusPending');
+        badge.style.background = '#fef9c3';
+        badge.style.color = '#854d0e';
+      }
+    }
+
+    function calculateDashboardMetrics() {
+      var users = (state.users && state.users.length > 0) ? state.users : generateDefaultUsers();
+      var total = users.length;
+      var regCount = 0;
+      var answered = 0;
+      var totalReportedMembers = 0;
+      var safeMembers = 0;
+      var dangerHouseholds = 0;
+      var escapeHouseholds = 0;
+      var powerOutages = 0;
+      var waterOutages = 0;
+      var dangerList = [];
+
+      users.forEach(function(u) {
+        if (u.hasRegisteredEmail) regCount++;
+        var ans = state.safetyAnswers[u.roomNumber];
+        if (ans && ans.safetyStatus && ans.safetyStatus !== '未回答') {
+          answered++;
+          totalReportedMembers += (ans.memberCount || 0);
+          safeMembers += (ans.safeCount || 0);
+          if (ans.isPowerOutage) powerOutages++;
+          if (ans.isWaterOutage) waterOutages++;
+          if (ans.safetyStatus === '要支援') { dangerHouseholds++; dangerList.push({ user: u, ans: ans }); }
+          if (ans.safetyStatus === '避難中') { escapeHouseholds++; dangerList.push({ user: u, ans: ans }); }
+        }
+      });
+
+      var rate = total > 0 ? Math.round((answered / total) * 100) : 0;
+      return {
+        users: users,
+        total: total,
+        regCount: regCount,
+        answered: answered,
+        rate: rate,
+        totalReportedMembers: totalReportedMembers,
+        safeMembers: safeMembers,
+        dangerHouseholds: dangerHouseholds,
+        escapeHouseholds: escapeHouseholds,
+        safeHouseholds: answered - dangerHouseholds - escapeHouseholds,
+        powerOutages: powerOutages,
+        waterOutages: waterOutages,
+        dangerList: dangerList
+      };
+    }
+
+    function renderAdminDashboard() {
+      var m = calculateDashboardMetrics();
+      var isFullAdmin = state.isAdminAuthenticated;
+      var isEn = (state.lang === 'en');
+
+      document.getElementById('adminActionButtons').classList.toggle('hidden', !isFullAdmin);
+      document.getElementById('adminBottomGrid').classList.toggle('hidden', !isFullAdmin);
+      document.getElementById('dashboardModeSub').innerText = isFullAdmin ? t('modeSubAdmin') : t('modeSubPublic');
+      document.getElementById('mapClickHint').innerHTML = isFullAdmin ? t('mapClickHintAdmin') : t('mapClickHintPublic');
+      document.getElementById('floorMapTitle').innerText = isEn
+        ? 'Floor-by-Floor Unit Safety Matrix (' + m.total + ' Units: 7F - 1F)'
+        : 'フロア別安否マップ (全' + m.total + '世帯: 7F〜1F)';
+
+      document.getElementById('statRegHouseholds').innerText = isEn ? (m.regCount + ' Units') : (m.regCount + '戸');
+      document.getElementById('statRegFooter').innerText = isEn
+        ? 'Registered: ' + m.regCount + ' / ' + m.total + ' Units'
+        : '一斉通知対象: ' + m.regCount + ' / 全' + m.total + '戸';
+
+      document.getElementById('statAnswerRate').innerText = m.rate + '%';
+      document.getElementById('statAnswerDetail').innerText = isEn
+        ? 'Responded: ' + m.answered + ' / Pending: ' + (m.total - m.answered) + ' (Total ' + m.total + ')'
+        : '回答: ' + m.answered + ' / 未回答: ' + (m.total - m.answered) + ' (全' + m.total + '世帯)';
+
+      document.getElementById('statSafeCount').innerText = isEn ? (m.safeMembers + ' ppl') : (m.safeMembers + '名');
+      document.getElementById('statSafeRate').innerText = isEn
+        ? 'Out of ' + m.totalReportedMembers + ' reported residents'
+        : '申告世帯総数: ' + m.totalReportedMembers + '名中';
+
+      document.getElementById('statDangerCount').innerText = isEn ? (m.dangerHouseholds + ' Units') : (m.dangerHouseholds + '世帯');
+      document.getElementById('statEscapeDetail').innerText = isEn
+        ? 'Evacuated: ' + m.escapeHouseholds + ' / Safe: ' + m.safeHouseholds
+        : '避難中: ' + m.escapeHouseholds + '世帯 / 無事: ' + m.safeHouseholds + '世帯';
+
+      document.getElementById('statPower').innerText = m.powerOutages;
+      document.getElementById('statWater').innerText = m.waterOutages;
+      document.getElementById('inputAnnouncement').value = state.announcement;
+
+      var btnTr = document.getElementById('btnToggleTraining');
+      btnTr.innerText = state.isTrainingMode ? t('btnTrainingActive') : t('btnEmergencyActive');
+      btnTr.style.background = state.isTrainingMode ? '#d97706' : '#dc2626';
+
+      var btnPub = document.getElementById('btnTogglePublicView');
+      btnPub.innerText = state.allowResidentPublicMap ? t('btnPubMapOn') : t('btnPubMapOff');
+      btnPub.style.background = state.allowResidentPublicMap ? '#0f766e' : '#64748b';
+
+      var supportList = document.getElementById('supportList');
+      document.getElementById('supportHeader').innerHTML = isEn
+        ? '<span>📌 Units Needing Assistance / Follow-up (' + m.dangerList.length + ')<\/span>'
+        : '<span>📌 要支援・要声かけ世帯 (' + m.dangerList.length + '件)<\/span>';
+
+      if (m.dangerList.length === 0) {
+        supportList.innerText = t('supportEmpty');
+      } else {
+        supportList.innerHTML = '';
+        m.dangerList.forEach(function(item) {
+          var div = document.createElement('div');
+          div.style.background = item.ans.safetyStatus === '要支援' ? '#fef2f2' : '#faf5ff';
+          div.style.border = '1px solid ' + (item.ans.safetyStatus === '要支援' ? '#fca5a5' : '#d8b4fe');
+          div.style.borderRadius = '8px';
+          div.style.padding = '0.75rem';
+          div.style.marginBottom = '0.5rem';
+          div.style.cursor = 'pointer';
+          div.onclick = function() { openRoomModal(item.user, item.ans); };
+          var unitTitle = isEn ? ('Unit ' + item.user.roomNumber) : (item.user.roomNumber + '号室');
+          var stLabel = translateStatusLabel(item.ans.safetyStatus);
+          var proxyLabel = item.ans.isProxy ? (isEn ? ' [Admin Proxy]' : ' [管理者代行]') : '';
+          var safeSummary = isEn
+            ? ('Safe: ' + item.ans.safeCount + '/' + item.ans.memberCount + proxyLabel)
+            : ('無事: ' + item.ans.safeCount + '/' + item.ans.memberCount + '名' + proxyLabel);
+
+          div.innerHTML =
+            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+              '<strong>' + unitTitle + ' — <span style="color:' + (item.ans.safetyStatus === '要支援' ? '#dc2626' : '#7e22ce') + ';">' + stLabel + '<\/span><\/strong>' +
+              '<span style="font-size:0.75rem; color:#64748b;">' + safeSummary + '<\/span>' +
+            '<\/div>' +
+            '<div style="font-size:0.82rem; color:#334155; margin-top:0.25rem;">' + (item.ans.memo || '-') + '<\/div>';
+          supportList.appendChild(div);
+        });
+      }
+
+      var matrix = document.getElementById('floorMatrix');
+      matrix.innerHTML = '';
+
+      var floors = Object.keys(APP_CONFIG.floorConfig).map(Number).sort(function(a, b) { return b - a; });
+      floors.forEach(function(f) {
+        var row = document.createElement('div');
+        row.className = 'floor-row';
+
+        var lbl = document.createElement('div');
+        lbl.className = 'floor-label';
+        lbl.innerText = f + 'F';
+        row.appendChild(lbl);
+
+        var roomsGrid = document.createElement('div');
+        roomsGrid.className = 'rooms-grid';
+
+        var roomsOnFloor = m.users.filter(function(u) { return String(u.roomNumber).indexOf(String(f)) === 0; });
+        roomsOnFloor.forEach(function(u) {
+          var ans = state.safetyAnswers[u.roomNumber];
+          var status = ans ? ans.safetyStatus : '未回答';
+
+          if (state.currentFilter !== 'all' && status !== state.currentFilter) return;
+
+          var cell = document.createElement('div');
+          cell.className = 'room-cell status-' + status;
+
+          if (u.isAdmin) {
+            cell.className += ' is-admin';
+          } else if (u.hasRegisteredEmail) {
+            cell.className += ' has-email';
+          }
+
+          var proxyText = isEn ? 'Proxy' : '代行確認';
+          var proxyTag = (ans && ans.isProxy) ? '<div class="proxy-indicator">' + proxyText + '<\/div>' : '';
+
+          cell.innerHTML =
+            '<div>' + u.roomNumber + (u.isAdmin ? ' 👑' : (u.hasRegisteredEmail ? ' ✉' : '')) + '<\/div>' +
+            '<div style="font-size: 0.65rem; opacity: 0.9;">' +
+              (status === '未回答' ? '👥-' : '🆗' + ans.safeCount + '/' + ans.memberCount) +
+            '<\/div>' + proxyTag;
+
+          cell.onclick = function() { openRoomModal(u, ans); };
+          roomsGrid.appendChild(cell);
+        });
+
+        row.appendChild(roomsGrid);
+        matrix.appendChild(row);
+      });
+    }
+
+    function openRoomModal(user, answer) {
+      var isEn = (state.lang === 'en');
+      state.selectedModalRoom = user;
+      document.getElementById('modalRoomHeader').innerText = isEn
+        ? ('Unit ' + user.roomNumber + ' — Details & Proxy Entry')
+        : (user.roomNumber + '号室 詳細情報');
+      document.getElementById('modalRoomNum').innerText = isEn ? ('Unit ' + user.roomNumber) : (user.roomNumber + '号室');
+      document.getElementById('modalRole').innerText = user.isAdmin
+        ? (isEn ? '👑 HOA Board Admin (Google Group)' : '👑 理事・管理者世帯 (理事会Googleグループ)')
+        : (isEn ? 'Resident Household' : '一般世帯');
+      document.getElementById('modalEmail').innerText = user.hasRegisteredEmail
+        ? (isEn ? '✉ Registered (Broadcast Target)' : '✉ 登録済み (一斉メール通知対象)')
+        : (isEn ? 'Not Registered' : '未登録');
+      document.getElementById('modalLastUpdated').innerText = (answer && answer.lastUpdated)
+        ? (answer.lastUpdated + ' — ' + (answer.updatedBy || ''))
+        : t('statusPending');
+
+      var srcBadge = document.getElementById('modalInputSourceBadge');
+      if (answer && answer.safetyStatus !== '未回答') {
+        srcBadge.innerText = translateStatusLabel(answer.safetyStatus) + (answer.isProxy
+          ? (isEn ? ' (Admin Proxy)' : ' (管理者代行)')
+          : (isEn ? ' (Self Report)' : ' (本人回答)'));
+        srcBadge.style.background = '#dcfce7';
+        srcBadge.style.color = '#166534';
+      } else {
+        srcBadge.innerText = t('statusPending');
+        srcBadge.style.background = '#fef9c3';
+        srcBadge.style.color = '#854d0e';
+      }
+
+      if (state.isAdminAuthenticated) {
+        document.getElementById('adminOverrideSection').classList.remove('hidden');
+        document.getElementById('residentReadOnlyModalFooter').classList.add('hidden');
+
+        var curStatus = (answer && answer.safetyStatus) ? answer.safetyStatus : '無事';
+        var r = document.querySelector('input[name="overrideStatus"][value="' + curStatus + '"]');
+        if (r) r.checked = true;
+
+        document.getElementById('overrideMemberCount').value = (answer && answer.memberCount) ? answer.memberCount : 2;
+        document.getElementById('overrideSafeCount').value = (answer && typeof answer.safeCount === 'number') ? answer.safeCount : 2;
+        document.getElementById('overridePower').checked = !!(answer && answer.isPowerOutage);
+        document.getElementById('overrideWater').checked = !!(answer && answer.isWaterOutage);
+        document.getElementById('overrideMemo').value = (answer && answer.memo) ? answer.memo : '';
+      } else {
+        document.getElementById('adminOverrideSection').classList.add('hidden');
+        document.getElementById('residentReadOnlyModalFooter').classList.remove('hidden');
+      }
+
+      document.getElementById('roomModal').classList.remove('hidden');
+    }
+
+    function openPrintPreview(orientation) {
+      var m = calculateDashboardMetrics();
+      var isEn = (state.lang === 'en');
+
+      document.getElementById('reportTermSub').innerText = isEn
+        ? (APP_CONFIG.buildingNameEn + ' HOA Emergency HQ [' + APP_CONFIG.termTitleEn + ']')
+        : (APP_CONFIG.buildingNameJa + ' 管理組合【' + state.termTitle + '】防災対策本部');
+      document.getElementById('reportTimestamp').innerText = new Date().toLocaleString(isEn ? 'en-US' : 'ja-JP');
+      document.getElementById('reportModeLabel').innerText = state.isTrainingMode ? t('trainingModeBadge') : t('emergencyModeBadge');
+      document.getElementById('reportTargetUnitsLabel').innerText = isEn
+        ? ('All ' + m.total + ' Units (1F-7F)')
+        : ('全' + m.total + '世帯 (1F〜7F)');
+
+      var regPct = m.total > 0 ? ((m.regCount / m.total) * 100).toFixed(1) : '0.0';
+      document.getElementById('repKpiReg').innerText = isEn ? (m.regCount + ' Units') : (m.regCount + '戸');
+      document.getElementById('repKpiRegSub').innerText = isEn
+        ? ('Total ' + m.total + ' (' + regPct + '%)')
+        : ('全' + m.total + '戸 (登録率 ' + regPct + '%)');
+
+      document.getElementById('repKpiRate').innerText = m.rate + '% (' + m.answered + '/' + m.total + ')';
+      document.getElementById('repKpiRateSub').innerText = isEn
+        ? ('Responded: ' + m.answered + ' / Pending: ' + (m.total - m.answered))
+        : ('回答済: ' + m.answered + '戸 / 未回答: ' + (m.total - m.answered) + '戸');
+
+      document.getElementById('repKpiSafe').innerText = isEn ? (m.safeMembers + ' ppl') : (m.safeMembers + '名');
+      document.getElementById('repKpiSafeSub').innerText = isEn
+        ? ('Reported Total: ' + m.totalReportedMembers + ' ppl')
+        : ('申告世帯人数合計: ' + m.totalReportedMembers + '名');
+
+      document.getElementById('repKpiDanger').innerText = isEn
+        ? ('Help ' + m.dangerHouseholds + ' / Evac ' + m.escapeHouseholds)
+        : ('要支援 ' + m.dangerHouseholds + ' / 避難 ' + m.escapeHouseholds);
+      document.getElementById('repKpiDangerSub').innerText = isEn
+        ? ('Confirmed Safe Units: ' + m.safeHouseholds)
+        : ('無事確認世帯: ' + m.safeHouseholds + '戸');
+
+      document.getElementById('repKpiLifeline').innerText = isEn
+        ? ('⚡Power: ' + m.powerOutages + ' / 💧Water: ' + m.waterOutages)
+        : ('⚡停電: ' + m.powerOutages + '件 / 💧断水: ' + m.waterOutages + '件');
+
+      document.getElementById('repMapBoxTitle').innerText = isEn
+        ? ('🏢 Floor-by-Floor Unit Safety Matrix (' + m.total + ' Units)')
+        : ('🏢 フロア別安否状況一覧マップ (全' + m.total + '戸)');
+
+      var repMatrix = document.getElementById('reportFloorMatrix');
+      repMatrix.innerHTML = '';
+      var floors = Object.keys(APP_CONFIG.floorConfig).map(Number).sort(function(a, b) { return b - a; });
+      floors.forEach(function(f) {
+        var row = document.createElement('div');
+        row.className = 'report-floor-row';
+
+        var lbl = document.createElement('div');
+        lbl.className = 'report-floor-lbl';
+        lbl.innerText = f + 'F';
+        row.appendChild(lbl);
+
+        var grid = document.createElement('div');
+        grid.className = 'report-rooms-grid';
+
+        var roomsOnFloor = m.users.filter(function(u) { return String(u.roomNumber).indexOf(String(f)) === 0; });
+        roomsOnFloor.forEach(function(u) {
+          var ans = state.safetyAnswers[u.roomNumber];
+          var status = ans ? ans.safetyStatus : '未回答';
+          var cell = document.createElement('div');
+          cell.className = 'report-room-cell status-' + status;
+          if (u.isAdmin) cell.className += ' is-admin';
+          else if (u.hasRegisteredEmail) cell.className += ' has-email';
+
+          var icon = u.isAdmin ? '👑' : (u.hasRegisteredEmail ? '✉' : '');
+          var pTag = (ans && ans.isProxy) ? (isEn ? '[P]' : '[代]') : '';
+          var stShort = translateStatusLabel(status);
+          var subText = status === '未回答' ? stShort : (stShort + ' ' + ans.safeCount + '/' + ans.memberCount + pTag);
+
+          cell.innerHTML =
+            '<div>' + u.roomNumber + icon + '<\/div>' +
+            '<div style="font-size:5.8pt; font-weight:700;">' + subText + '<\/div>';
+          grid.appendChild(cell);
+        });
+
+        row.appendChild(grid);
+        repMatrix.appendChild(row);
+      });
+
+      var wrap = document.getElementById('reportSupportTableWrap');
+      document.getElementById('repSupportTitle').innerText = isEn
+        ? ('📌 Units Needing Help / Evacuated (' + m.dangerList.length + ')')
+        : ('📌 要支援・避難中世帯リスト (' + m.dangerList.length + '件)');
+      if (m.dangerList.length === 0) {
+        wrap.innerHTML = '<div style="padding:8px; color:#64748b; font-size:8pt;">' + t('supportEmpty') + '<\/div>';
+      } else {
+        var html = isEn
+          ? '<table class="report-table"><thead><tr><th style="width:52px;">Unit<\/th><th style="width:65px;">Status<\/th><th style="width:62px;">Safe/Total<\/th><th>Notes & Action Log<\/th><\/tr><\/thead><tbody>'
+          : '<table class="report-table"><thead><tr><th style="width:52px;">部屋<\/th><th style="width:55px;">状態<\/th><th style="width:58px;">無事/人数<\/th><th>状況メモ・対応記録<\/th><\/tr><\/thead><tbody>';
+        m.dangerList.forEach(function(item) {
+          html += '<tr>' +
+            '<td><strong>' + (isEn ? ('#' + item.user.roomNumber) : (item.user.roomNumber + '号室')) + '<\/strong><\/td>' +
+            '<td style="color:' + (item.ans.safetyStatus === '要支援' ? '#dc2626' : '#7e22ce') + '; font-weight:800;">' + translateStatusLabel(item.ans.safetyStatus) + '<\/td>' +
+            '<td>' + item.ans.safeCount + '/' + item.ans.memberCount + '<\/td>' +
+            '<td>' + (item.ans.memo || '-') + '<\/td>' +
+          '<\/tr>';
+        });
+        html += '<\/tbody><\/table>';
+        wrap.innerHTML = html;
+      }
+
+      var notesEl = document.getElementById('reportEditableNotes');
+      notesEl.value = state.announcement + (isEn
+        ? '\n• Board members are conducting door-to-door/intercom checks for unconfirmed units.'
+        : '\n・未回答世帯については理事・防災委員にて順次インターホン・外周確認を実施。');
+
+      setPrintOrientation(orientation || 'landscape');
+      document.getElementById('printPreviewModal').classList.remove('hidden');
+    }
+
+    function setPrintOrientation(mode) {
+      state.printOrientation = mode;
+      var sheet = document.getElementById('a4SheetContainer');
+      var btnLand = document.getElementById('btnLayoutLandscape');
+      var btnPort = document.getElementById('btnLayoutPortrait');
+      var pageRule = document.getElementById('dynamicPageRule');
+      if (!pageRule) {
+        pageRule = document.createElement('style');
+        pageRule.id = 'dynamicPageRule';
+        document.head.appendChild(pageRule);
+      }
+
+      if (mode === 'portrait') {
+        sheet.classList.remove('landscape');
+        sheet.classList.add('portrait');
+        btnPort.style.background = '#0f766e';
+        btnPort.style.color = 'white';
+        btnLand.style.background = 'transparent';
+        btnLand.style.color = '#cbd5e1';
+        pageRule.innerHTML = '@page { size: A4 portrait; margin: 6mm; }';
+      } else {
+        sheet.classList.remove('portrait');
+        sheet.classList.add('landscape');
+        btnLand.style.background = '#0f766e';
+        btnLand.style.color = 'white';
+        btnPort.style.background = 'transparent';
+        btnPort.style.color = '#cbd5e1';
+        pageRule.innerHTML = '@page { size: A4 landscape; margin: 6mm; }';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# Non-Commercial & No-Warranty License
+# 非商用（販売禁止）・無保証免責ライセンス
+
+Copyright (c) 2026 Genesis LLC. (https://genexis.jp) / Condo Safety Check System Contributors
+
+---
+
+## 🇯🇵 日本語規約（Japanese Terms）
+
+本ソフトウェアおよび関連ドキュメント（以下「本ソフトウェア」）は、分譲マンション管理組合・自治会・アパートメント・コンドミニアム（HOA）・地域防災組織等の自助・共助活動に役立てていただくため、以下の条件のもとで公開されています。
+
+### 1. 許諾される行為（無償利用・改変・非営利での再配布）
+1. **無償での利用**：マンション管理組合、自治会、居住者団体、個人、教育・研究機関、または非営利目的において、本ソフトウェアを無償で使用・運用すること。
+2. **改変・カスタマイズ**：ご自身のマンション・建物の階数、部屋番号、運用ルール、言語等に合わせて本ソフトウェアを自由に改変すること。
+3. **非営利での共有・再配布**：本ライセンス表示および免責事項を残した状態で、他の管理組合やコミュニティへ無償で共有・再配布すること。
+
+### 2. 禁止される行為（有償販売・商用利用の禁止）
+1. **販売の禁止**：本ソフトウェア（改変版・派生版を含む）そのもの、または本ソフトウェアを組み込んだパッケージ・テンプレートを有償で販売すること。
+2. **有料サービス（SaaS等）としての提供禁止**：本ソフトウェアを用いて、第三者から利用料・サブスクリプション料金・導入代行費用（実費を超える営利目的の対価）を徴収する商用サービスとして提供すること。
+   *（※マンション管理組合内での通常の管理費・防災予算からの無償導入運用は「非営利利用」にあたり、問題なくご利用いただけます）*
+
+### 3. 免責事項・無保証（重要：災害時・緊急時の免責特約）
+本ソフトウェアは「現状有姿（AS IS）」で提供され、明示または黙示を問わず、商品性、特定目的への適合性、正確性、通信の継続性、および権利非侵害についての保証を含め、いかなる保証も行いません。
+
+**【災害・緊急時に関する特別免責】**
+本ソフトウェアは住民間の自主的な安否確認・防災訓練を補助するツールであり、公的機関の緊急通報システムや人命救助を保証するものではありません。地震・火災・風水害等の災害時、通信障害、Googleサービスの障害、設定ミス、またはプログラムの不具合等により本ソフトウェアが正常に動作しなかった場合や、情報の遅延・消失・誤表示・漏洩等が生じた場合であっても、**著作者および著作権者は、契約責任、不法行為責任、その他いかなる法的根拠に基づく場合であっても、直接損害、間接損害、特別損害、付随的損害、または結果的損害（人命・身体・財産への損害を含むがこれに限られない）について、一切の責任を負いません。**
+導入および運用は、すべて利用者（各管理組合・運用者）ご自身の判断と責任において行ってください。
+
+---
+
+## 🌐 English Terms (Non-Commercial & Disclaimer of Warranty)
+
+Permission is hereby granted, free of charge, to any Condominium Association, Homeowners Association (HOA), Resident Organization, non-profit entity, or individual obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, and distribute the Software **strictly for non-commercial purposes**, subject to the following conditions:
+
+### 1. Permitted Non-Commercial Uses
+- **Free Use & Operation**: You may use and host the Software free of charge for your condominium, apartment building, HOA, neighborhood association, or personal/educational disaster preparedness activities.
+- **Modification**: You may freely modify the Software (such as unit numbers, floor layouts, translations, and rules) to fit your building or community.
+- **Non-Commercial Redistribution**: You may share or redistribute the Software free of charge, provided that the above copyright notice, this non-commercial restriction, and the disclaimer below are included in all copies.
+
+### 2. Prohibited Commercial Uses (No Selling)
+- **No Sale of Software**: You may **NOT** sell, license for a fee, or commercially distribute the Software or any derivative works thereof.
+- **No Paid SaaS / Commercial Hosting**: You may **NOT** use the Software to provide paid commercial hosting, subscription services, or for-profit consulting packages to third parties.
+
+### 3. Disclaimer of Warranty & Limitation of Liability (Emergency & Disaster Disclaimer)
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AVAILABILITY, AND NONINFRINGEMENT.
+
+**SPECIAL DISCLAIMER FOR EMERGENCIES AND DISASTERS:**
+THIS SOFTWARE IS A VOLUNTARY COMMUNITY PREPAREDNESS TOOL AND IS NOT A SUBSTITUTE FOR OFFICIAL EMERGENCY SERVICES (SUCH AS 119 / 911). IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE, INCLUDING BUT NOT LIMITED TO ANY FAILURE OF THE SOFTWARE DURING AN EARTHQUAKE, FIRE, FLOOD, POWER OUTAGE, GOOGLE SERVICE OUTAGE, OR OTHER EMERGENCY, OR ANY LOSS OF LIFE, PERSONAL INJURY, PROPERTY DAMAGE, OR DATA LOSS. USE AT YOUR OWN RISK.
