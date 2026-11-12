@@ -32,8 +32,9 @@ Try the system right now in your browser! You can switch between **English** and
 
 1. **100% Free & Serverless ($0/month)**
    - Runs entirely on a single shared Google Account (`@gmail.com`) belonging to your Condo Board or HOA using Google Apps Script, Google Sheets, and Google Drive.
-2. **Privacy by Design: No Personal Data Collected**
-   - Residents sign in with just their unit number and a simple PIN, and the board notifies them by email or LINE when a disaster strikes. Because the system does not collect residents' names, phone numbers, or email addresses, the risk of a personal-data leak is reduced to an absolute minimum.
+2. **Privacy by Design: No Resident Names or Contact Details Stored**
+   - Residents sign in with just their unit number and a simple PIN, and the board notifies them by email or LINE when a disaster strikes. The system does not store residents' names, phone numbers, or email addresses, which keeps the risk of a resident-directory leak to a minimum.
+   - *Note: The safety and injury status of each unit, and the Google addresses board members use to sign in, are stored. Keep the spreadsheet private and do not share it with residents.*
 3. **Instant Bilingual UI (`🌐 English / 日本語`)**
    - One-click toggle between English and Japanese (or via URL parameter `?lang=en` / `?lang=ja`), covering all status badges, modals, checklists, and CSV exports—ideal for international communities and multicultural buildings.
 4. **Two-Tier Security (Resident PIN + Board Admin 1-to-1 Passkey Auth)**
@@ -87,14 +88,24 @@ Detailed operational guides are available in the [`docs/`](./docs/) directory:
 
 ## ⚖️ License & Emergency Disclaimer (Important)
 
-This software is licensed under the **[Non-Commercial & No-Warranty License](./LICENSE)**.
+This software is available under a **[dual license (Non-Commercial License / Commercial License)](./LICENSE)**.
 
-### ✅ Permitted (Free Community Use)
+| License | Who | Terms |
+|---|---|---|
+| **Non-Commercial License** | Condo associations, HOAs, neighborhood disaster response teams, non-profits, individuals, educational institutions | Free of charge |
+| **Commercial License** | Property management companies, integrators, for-profit businesses | Separate paid agreement with Genesis LLC |
+
+### ✅ Free under the Non-Commercial License
 - Condominium associations, HOAs, apartment communities, neighborhood disaster response teams, non-profits, and individuals are **free to use, copy, modify, and redistribute** this software at no cost.
+- A condo association that installs and runs the software itself, paid for from its regular budget, may also use it free of charge.
 
-### 🚫 Prohibited (No Commercial Sale)
-- **Selling this software (or modified versions) for a fee, or offering it as a paid commercial SaaS / commercial service, is strictly prohibited.**
-  - *Note: Because the standard MIT License allows unrestricted commercial sale, this project uses a custom Non-Commercial license to ensure it remains free for communities worldwide.*
+### 💼 Commercial License Required
+The following uses require a Commercial License agreement with Genesis LLC:
+- **Selling the software (or modified versions), offering it as a paid SaaS or commercial package, or charging for installation services**
+- **A property or building management company providing the software to the properties it manages or to its customers as part of its own services** (whether paid or free)
+- **A for-profit company using the software in its business to check the safety of employees, facility users, or residents**
+
+Commercial licensing inquiries: `info@genexis.jp`
 
 ### ⚠️ Emergency & Life-Safety Disclaimer
 - This software is provided **"AS IS" without warranty of any kind** as a supplementary self-help community tool. **It is NOT a substitute for official emergency services (such as 911, 112, or 119) or official evacuation orders.**
