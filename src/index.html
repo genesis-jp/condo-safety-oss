@@ -833,9 +833,9 @@
       <!-- 5 KPI Cards -->
       <div class="dashboard-stats">
         <div class="stat-card" style="border-left: 4px solid #1e3a8a;">
-          <div class="stat-card-title" id="kpiTitle1" style="color: #1e3a8a;">メール登録世帯数</div>
-          <div class="stat-card-value" style="color: #1e3a8a;" id="statRegHouseholds">76戸</div>
-          <div class="stat-card-footer" id="statRegFooter">一斉通知対象: 76 / 全97戸</div>
+          <div class="stat-card-title" id="kpiTitle1" style="color: #1e3a8a;">メール登録世帯数・登録率</div>
+          <div class="stat-card-value" style="color: #1e3a8a;" id="statRegHouseholds">76世帯 (78.4%)</div>
+          <div class="stat-card-footer" id="statRegFooter">76世帯 / 97世帯中 (登録率 78.4%)</div>
         </div>
 
         <div class="stat-card">
@@ -845,9 +845,9 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-card-title" id="kpiTitle3">無事在宅人数 (個人)</div>
-          <div class="stat-card-value" id="statSafeCount">0名</div>
-          <div class="stat-card-footer" id="statSafeRate">申告世帯総数: 0名中</div>
+          <div class="stat-card-title" id="kpiTitle3">無事在宅人数・無事在宅率 (人数ベース)</div>
+          <div class="stat-card-value" id="statSafeCount">0名 (0.0%)</div>
+          <div class="stat-card-footer" id="statSafeRate">無事在宅率: 0.0% (申告総数 0名中)</div>
         </div>
 
         <div class="stat-card" style="border-left: 4px solid var(--color-danger);">
@@ -1340,7 +1340,7 @@
         demoResidentBtn: '🏠 住民回答画面を体験 (305号室)',
         demoSampleBtn: '🧪 サンプル訓練データ投入',
         demoPrintBtn: '🖨️ A4記録シート出力',
-        headerAppTitle: APP_CONFIG.buildingNameJa + ' 安否確認',
+        headerAppTitle: APP_CONFIG.buildingNameJa + ' 安否確認 v2.1.11',
         trainingModeBadge: '訓練モード',
         emergencyModeBadge: '🚨 災害本稼働',
         onlineStatus: '● オンライン稼働中',
@@ -1350,7 +1350,7 @@
         toAdminDashBtn: '🏢 管理画面へ戻る',
         toPublicMapBtn: '🗺️ マンション全体状況を見る(閲覧専用)',
         backToMyReportBtn: '📝 自室の安否報告へ戻る',
-        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameJa + ' 管理組合【' + APP_CONFIG.termTitleJa + '】',
+        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameJa + ' 管理組合【' + APP_CONFIG.termTitleJa + '】v2.1.11',
         loginMainTitle: 'マンション安否確認システム',
         loginSubTitle: '災害時・防災訓練時の世帯安否報告および本部集計システム',
         tabResidentLogin: '🏠 一般世帯ログイン',
@@ -1387,15 +1387,15 @@
         lblResStep3: '3. 備考・連絡事項 (負傷・支援要請・避難先など)',
         phInputMemo: '例: 全員無事です / 高齢のため階段移動に手助けが必要です 等',
         btnSubmitResidentAnswer: '✅ 安否状況を報告・更新する',
-        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameJa + ' 安否確認ダッシュボード',
-        modeSubAdmin: '🔐 管理者モード (代行入力・印刷出力可)',
+        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameJa + ' 安否確認ダッシュボード (v2.1.11)',
+        modeSubAdmin: '🔐 管理者モード v2.1.11 (代行入力・印刷出力可)',
         modeSubPublic: '👁️ 一般住民向け 全体状況閲覧モード (個人メモ非表示)',
         btnQuickProxyInput: '✏️ 部屋番号を指定して代行入力',
         btnOpenTermModal: '📅 年度・管理者設定',
         btnOpenPrintPreview: '🖨️ A4記録シート出力 (縦・横プレビュー)',
-        kpiTitle1: 'メール登録世帯数',
+        kpiTitle1: 'メール登録世帯数・登録率',
         kpiTitle2: '回答状況 (世帯)',
-        kpiTitle3: '無事在宅人数 (個人)',
+        kpiTitle3: '無事在宅人数・無事在宅率 (人数ベース)',
         kpiTitle4: '救助要請世帯',
         kpiTitle4Admin: '救助要請 / 要支援',
         kpiTitle5: 'ライフライン・設備異常',
@@ -1518,7 +1518,7 @@
         demoResidentBtn: '🏠 Try Resident Form (Unit 305)',
         demoSampleBtn: '🧪 Load Sample Drill Data',
         demoPrintBtn: '🖨️ A4 Printable Report',
-        headerAppTitle: APP_CONFIG.buildingNameEn + ' Safety Check',
+        headerAppTitle: APP_CONFIG.buildingNameEn + ' Safety Check v2.1.11',
         trainingModeBadge: 'Drill Mode',
         emergencyModeBadge: '🚨 Emergency Active',
         onlineStatus: '● System Online',
@@ -1528,7 +1528,7 @@
         toAdminDashBtn: '🏢 Admin Dashboard',
         toPublicMapBtn: '🗺️ Building Status Map (Public View)',
         backToMyReportBtn: '📝 Back to My Unit Report',
-        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameEn + ' HOA Board [' + APP_CONFIG.termTitleEn + ']',
+        loginBadgeOrg: '🏢 ' + APP_CONFIG.buildingNameEn + ' HOA Board [' + APP_CONFIG.termTitleEn + '] v2.1.11',
         loginMainTitle: 'Resident Safety Check System',
         loginSubTitle: 'Emergency & Disaster Drill Household Safety Reporting and HOA HQ Dashboard',
         tabResidentLogin: '🏠 Resident Login',
@@ -1566,15 +1566,15 @@
         lblResStep3: '3. Notes / Assistance Needed / Evacuation Location',
         phInputMemo: 'e.g., Everyone is safe / Need assistance with stairs on 3rd floor',
         btnSubmitResidentAnswer: '✅ Submit Safety Report',
-        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameEn + ' Safety Dashboard',
-        modeSubAdmin: '🔐 Admin Mode (Proxy Entry & Print Enabled)',
+        dashboardMainHeading: '🏢 ' + APP_CONFIG.buildingNameEn + ' Safety Dashboard (v2.1.11)',
+        modeSubAdmin: '🔐 Admin Mode v2.1.11 (Proxy Entry & Print Enabled)',
         modeSubPublic: '👁️ Resident Public View (Personal Notes Masked)',
         btnQuickProxyInput: '✏️ Proxy Entry by Unit #',
         btnOpenTermModal: '📅 Annual Term & Admin Setup',
         btnOpenPrintPreview: '🖨️ A4 Printable Report (Landscape / Portrait)',
-        kpiTitle1: 'Email Registered Units',
+        kpiTitle1: 'Email Registered Units & Rate',
         kpiTitle2: 'Response Rate (Units)',
-        kpiTitle3: 'Safe at Home (People)',
+        kpiTitle3: 'Safe at Home Count & Rate (People)',
         kpiTitle4: 'Rescue Requests',
         kpiTitle4Admin: 'Rescue / Support List',
         kpiTitle5: 'Utility & Door Issues',
@@ -3045,14 +3045,18 @@
       });
 
       var rate = total > 0 ? Math.round((answered / total) * 100) : 0;
+      var regRate = total > 0 ? ((regCount / total) * 100).toFixed(1) : '0.0';
+      var safeMemberRate = totalReportedMembers > 0 ? ((safeMembers / totalReportedMembers) * 100).toFixed(1) : '0.0';
       return {
         users: users,
         total: total,
         regCount: regCount,
+        regRate: regRate,
         answered: answered,
         rate: rate,
         totalReportedMembers: totalReportedMembers,
         safeMembers: safeMembers,
+        safeMemberRate: safeMemberRate,
         rescueHouseholds: rescueHouseholds,
         dangerHouseholds: rescueHouseholds,
         supportCount: supportListAll.length,
@@ -3086,20 +3090,24 @@
         ? 'Floor-by-Floor Unit Safety Matrix (' + m.total + ' Units: 7F - 1F)'
         : 'フロア別安否マップ (全' + m.total + '世帯: 7F〜1F)';
 
-      document.getElementById('statRegHouseholds').innerText = isEn ? (m.regCount + ' Units') : (m.regCount + '戸');
+      document.getElementById('statRegHouseholds').innerText = isEn
+        ? (m.regCount + ' Units (' + m.regRate + '%)')
+        : (m.regCount + '世帯 (' + m.regRate + '%)');
       document.getElementById('statRegFooter').innerText = isEn
-        ? 'Registered: ' + m.regCount + ' / ' + m.total + ' Units'
-        : '一斉通知対象: ' + m.regCount + ' / 全' + m.total + '戸';
+        ? ('Registered: ' + m.regCount + ' / ' + m.total + ' Units (Rate ' + m.regRate + '%)')
+        : (m.regCount + '世帯 / ' + m.total + '世帯中 (登録率 ' + m.regRate + '%)');
 
       document.getElementById('statAnswerRate').innerText = m.rate + '%';
       document.getElementById('statAnswerDetail').innerText = isEn
         ? 'Responded: ' + m.answered + ' / Pending: ' + (m.total - m.answered) + ' (Total ' + m.total + ')'
         : '回答: ' + m.answered + ' / 未回答: ' + (m.total - m.answered) + ' (全' + m.total + '世帯)';
 
-      document.getElementById('statSafeCount').innerText = isEn ? (m.safeMembers + ' ppl') : (m.safeMembers + '名');
+      document.getElementById('statSafeCount').innerText = isEn
+        ? (m.safeMembers + ' ppl (' + m.safeMemberRate + '%)')
+        : (m.safeMembers + '名 (' + m.safeMemberRate + '%)');
       document.getElementById('statSafeRate').innerText = isEn
-        ? 'Out of ' + m.totalReportedMembers + ' reported residents'
-        : '申告世帯総数: ' + m.totalReportedMembers + '名中';
+        ? ('Safe at Home Rate: ' + m.safeMemberRate + '% (of ' + m.totalReportedMembers + ' reported)')
+        : ('無事在宅率: ' + m.safeMemberRate + '% (申告世帯総数 ' + m.totalReportedMembers + '名中)');
 
       document.getElementById('kpiTitle4').innerText = isFullAdmin ? t('kpiTitle4Admin') : t('kpiTitle4');
       document.getElementById('statDangerCount').innerText = isFullAdmin
@@ -3345,21 +3353,24 @@
         ? ('All ' + m.total + ' Units (1F-7F)')
         : ('全' + m.total + '世帯 (1F〜7F)');
 
-      var regPct = m.total > 0 ? ((m.regCount / m.total) * 100).toFixed(1) : '0.0';
-      document.getElementById('repKpiReg').innerText = isEn ? (m.regCount + ' Units') : (m.regCount + '戸');
+      document.getElementById('repKpiReg').innerText = isEn
+        ? (m.regCount + ' Units (' + m.regRate + '%)')
+        : (m.regCount + '世帯 (' + m.regRate + '%)');
       document.getElementById('repKpiRegSub').innerText = isEn
-        ? ('Total ' + m.total + ' (' + regPct + '%)')
-        : ('全' + m.total + '戸 (登録率 ' + regPct + '%)');
+        ? (m.regCount + ' / ' + m.total + ' Units (Rate ' + m.regRate + '%)')
+        : (m.regCount + '世帯 / ' + m.total + '世帯中 (登録率 ' + m.regRate + '%)');
 
       document.getElementById('repKpiRate').innerText = m.rate + '% (' + m.answered + '/' + m.total + ')';
       document.getElementById('repKpiRateSub').innerText = isEn
         ? ('Responded: ' + m.answered + ' / Pending: ' + (m.total - m.answered))
         : ('回答済: ' + m.answered + '戸 / 未回答: ' + (m.total - m.answered) + '戸');
 
-      document.getElementById('repKpiSafe').innerText = isEn ? (m.safeMembers + ' ppl') : (m.safeMembers + '名');
+      document.getElementById('repKpiSafe').innerText = isEn
+        ? (m.safeMembers + ' ppl (' + m.safeMemberRate + '%)')
+        : (m.safeMembers + '名 (' + m.safeMemberRate + '%)');
       document.getElementById('repKpiSafeSub').innerText = isEn
-        ? ('Reported Total: ' + m.totalReportedMembers + ' ppl')
-        : ('申告世帯人数合計: ' + m.totalReportedMembers + '名');
+        ? ('Safe Rate: ' + m.safeMemberRate + '% (Total: ' + m.totalReportedMembers + ' ppl)')
+        : ('無事在宅率 ' + m.safeMemberRate + '% (申告総数 ' + m.totalReportedMembers + '名中)');
 
       document.getElementById('repKpiDanger').innerText = isEn
         ? ('Rescue ' + m.rescueHouseholds + ' / Supp ' + m.supportCount)
