@@ -36,8 +36,8 @@ Try the system right now in your browser! You can switch between **English** and
    - **Zero Public Folder Sharing**: Automatically creates an annual folder hierarchy (`My Drive > 安否確認システム > 2026年版`) inside the Board's Google Drive. **You do NOT need to share the Google Drive folder or Spreadsheet publicly with residents**, eliminating direct database exposure.
    - **Default-Private Public Map & Confidential Support Registry**: The resident-facing building map is **hidden by default** (`ALLOW_RESIDENT_PUBLIC_MAP: false`). Moreover, pre-registered **Support-Needed Units (`🤝`)** are strictly visible to Board Admins only and never exposed in resident views (v2.0).
    - **WebAuthn Passkey + Email OTP Fallback**: Matches each board member's Google email 1-to-1 with their unit number and verifies identity via WebAuthn Passkey (Touch ID / Face ID / Windows Hello) or 6-digit email OTP fallback when embedded in GAS iframes.
-3. **Inclusive Hybrid Operation (Independent Door Tag, Equipment Issues & 2-Table A4 Report)**
-   - Residents report **Safe at Home / Evacuated / Rescue Request**, plus an independent **Door Safety Tag Posted (`🚪`)** checkbox and **Entrance Door Jammed (`🔒`) / Other Damage (`⚠️`)** checkboxes.
+3. **Inclusive Hybrid Operation (Coexisting with Magnetic Door Tags, Equipment Issues & 2-Table A4 Report)**
+   - Residents report **Safe at Home / Evacuated / Rescue Request**, plus an independent **Door Safety Tag Posted (`🚪`)** checkbox designed to **coexist with existing magnetic door-tag / safety placard methods** so safety can be confirmed reliably through both digital reporting and physical door checks, alongside **Entrance Door Jammed (`🔒`) / Other Damage (`⚠️`)** checkboxes.
    - Board members can enter proxy reports (`[代]`) and print a **1-page A4 report** featuring separate tables for **Emergency Rescue/Damage** and **Pre-Registered Support Units**.
 4. **Instant Bilingual UI (`🌐 English / 日本語`)**
    - One-click toggle between English and Japanese (or via URL parameter `?lang=en` / `?lang=ja`), covering all status badges, modals, checklists, and CSV exports—ideal for international communities and multicultural buildings.
