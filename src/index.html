@@ -729,6 +729,11 @@
             <span id="btnStartPasskeyText">Google パスキーで管理者認証する</span>
           </button>
 
+          <div id="savedPasskeyDeviceBox" class="hidden" style="margin-top:0.55rem; background:#f0fdfa; border:1px solid #99f6e4; border-radius:8px; padding:0.45rem 0.65rem; font-size:0.75rem; color:#0f766e; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.35rem;">
+            <span id="savedPasskeyDeviceLabel" style="font-weight:700;">📱 パスキー保存済</span>
+            <button type="button" id="btnSwitchGoogleAccountPopup" style="background:transparent; border:1px solid #0f766e; color:#0f766e; border-radius:5px; padding:2px 6px; font-size:0.7rem; font-weight:700; cursor:pointer;">別のアカウントで認証(Popup)</button>
+          </div>
+
           <div id="adminAuthAuditNote" style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed #cbd5e1; font-size: 0.74rem; color: var(--text-muted);">
             ※認証試行および管理操作の履歴はすべてGoogleドライブ内の監査ログに自動記録されます。
           </div>
@@ -1095,6 +1100,7 @@
         </div>
       </div>
 
+      <!-- [v2.1.0 コメントアウト保持] 災害時はワンタイムパスワード(OTP)のメール受信・入力に時間がかかるため無効化
       <div id="otpFallbackBox" class="hidden" style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:0.75rem; margin-bottom:1rem;">
         <div style="font-weight:800; color:#92400e; font-size:0.82rem; margin-bottom:0.35rem;">
           📧 メール確認コード認証（GASフレーム制限時フォールバック）
@@ -1107,6 +1113,7 @@
           <button type="button" id="btnVerifyOtp" class="btn-action" style="width:auto; padding:0.55rem 1rem; background:#d97706;">コード確認</button>
         </div>
       </div>
+      -->
 
       <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:0.75rem; font-size:0.76rem; color:#334155; margin-bottom:1.15rem; line-height:1.45;">
         <div>🛡️ <strong id="pkRuleHeading">なりすまし防止・1対1アカウント拘束仕様</strong></div>
@@ -2147,9 +2154,10 @@
       };
 
       document.getElementById('btnStartPasskeyAuth').onclick = function() {
-        document.getElementById('inputAdminEmail').value = '';
-        updateResolvedRoomPreview();
-        document.getElementById('passkeyModal').classList.remove('hidden');
+        startPasskeyOrPopupAuth(false);
+      };
+      document.getElementById('btnSwitchGoogleAccountPopup').onclick = function() {
+        startPasskeyOrPopupAuth(true);
       };
       document.getElementById('inputAdminEmail').oninput = function() {
         updateResolvedRoomPreview();
@@ -2160,9 +2168,11 @@
       document.getElementById('btnConfirmPasskey').onclick = function() {
         executePasskeyAdminLogin();
       };
+      /* [v2.1.0 OTP無効化]
       document.getElementById('btnVerifyOtp').onclick = function() {
         executeOtpAdminVerify();
       };
+      */
 
       document.getElementById('answerForm').onsubmit = function(e) {
         e.preventDefault();
@@ -2369,7 +2379,105 @@
       }
     }
 
-    var pendingOtpAdminSession = null;
+    var DEVICE_PASSKEY_STORAGE_KEY = 'condo_admin_device_passkey_v21';
+
+    function getSavedDevicePasskey() {
+      try {
+        var raw = localStorage.getItem(DEVICE_PASSKEY_STORAGE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.email && parsed.roomNumber) return parsed;
+      } catch (e) {}
+      return null;
+    }
+
+    function saveDevicePasskey(email, roomNumber, credentialId) {
+      try {
+        localStorage.setItem(DEVICE_PASSKEY_STORAGE_KEY, JSON.stringify({
+          email: String(email || '').trim().toLowerCase(),
+          roomNumber: String(roomNumber || '').trim(),
+          credentialId: String(credentialId || ''),
+          savedAt: new Date().toISOString()
+        }));
+      } catch (e) {}
+      renderSavedPasskeyDeviceHint();
+    }
+
+    function renderSavedPasskeyDeviceHint() {
+      var box = document.getElementById('savedPasskeyDeviceBox');
+      var lbl = document.getElementById('savedPasskeyDeviceLabel');
+      var btnSw = document.getElementById('btnSwitchGoogleAccountPopup');
+      if (!box || !lbl) return;
+      var saved = getSavedDevicePasskey();
+      if (saved && saved.email) {
+        box.classList.remove('hidden');
+        lbl.innerText = state.lang === 'en'
+          ? ('📱 Saved Passkey: Unit ' + saved.roomNumber + ' (' + saved.email + ')')
+          : ('📱 端末パスキー保存済: ' + saved.roomNumber + '号室 (' + saved.email + ')');
+        if (btnSw) {
+          btnSw.innerText = state.lang === 'en' ? 'Switch Google Account (Popup)' : '別のGoogleアカウントで認証(Popup)';
+        }
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function openGoogleAccountAuthPopup(prefillEmail) {
+      var errBox = document.getElementById('passkeyErrorBox');
+      if (errBox) errBox.classList.add('hidden');
+      document.getElementById('inputAdminEmail').value = prefillEmail || '';
+      updateResolvedRoomPreview();
+      document.getElementById('passkeyModal').classList.remove('hidden');
+      document.getElementById('inputAdminEmail').focus();
+    }
+
+    /**
+     * [v2.1.0] デバイスにパスキーが保存されていれば即座に顔認証・生体認証でログインし、
+     * 保存されていなければ Googleアカウント認証の画面を Popup する
+     */
+    function startPasskeyOrPopupAuth(forcePopup) {
+      var saved = getSavedDevicePasskey();
+      if (forcePopup || !saved || !saved.email) {
+        openGoogleAccountAuthPopup(saved ? saved.email : '');
+        return;
+      }
+
+      // デバイスにパスキーが保存されている場合：Popupを出さずに即座に生体認証（顔認証・Touch ID等）を実行
+      var realCredId = (saved.credentialId && saved.credentialId.indexOf('google-passkey-') !== 0) ? saved.credentialId : '';
+      performWebAuthnPasskey(saved.email, realCredId).then(function(pkRes) {
+        if (!pkRes.ok && !pkRes.isIframeBlocked) {
+          // ユーザーが生体認証をキャンセルした場合はGoogleアカウント認証Popupを表示
+          openGoogleAccountAuthPopup(saved.email);
+          return;
+        }
+
+        if (!isStandaloneDemoEnv()) {
+          google.script.run.withFailureHandler(function() {
+            openGoogleAccountAuthPopup(saved.email);
+          }).withSuccessHandler(function(res) {
+            if (res && res.isAdmin && res.roomNumber) {
+              if (pkRes.ok && pkRes.credentialId) {
+                saveDevicePasskey(res.email, res.roomNumber, pkRes.credentialId);
+                if (pkRes.mode === 'create') {
+                  google.script.run.registerAdminPasskey(res.email, res.roomNumber, pkRes.credentialId);
+                }
+              }
+              finalizeAdminLogin(res.roomNumber, res.email);
+            } else {
+              openGoogleAccountAuthPopup(saved.email);
+            }
+          }).verifyAdminRoleByGoogleSession(saved.email);
+          return;
+        }
+
+        var resolvedRoom = resolveAdminRoomByEmail(saved.email);
+        if (resolvedRoom) {
+          finalizeAdminLogin(resolvedRoom, saved.email);
+        } else {
+          openGoogleAccountAuthPopup(saved.email);
+        }
+      });
+    }
 
     function base64urlToUint8Array(base64url) {
       var pad = '='.repeat((4 - base64url.length % 4) % 4);
@@ -2389,7 +2497,7 @@
 
     function performWebAuthnPasskey(email, storedCredentialId) {
       if (!window.PublicKeyCredential || !navigator.credentials) {
-        return Promise.resolve({ ok: false, fallbackOtp: true, reason: 'WebAuthn unsupported' });
+        return Promise.resolve({ ok: false, isIframeBlocked: true, reason: 'WebAuthn unsupported' });
       }
       var challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
@@ -2408,9 +2516,9 @@
           var msg = String(err && (err.message || err.name) || '');
           var isIframeBlocked = (window.self !== window.top) || (err && (err.name === 'SecurityError' || err.name === 'NotSupportedError' || err.name === 'NotAllowedError')) || msg.indexOf('Permissions') !== -1 || msg.indexOf('publickey-credentials') !== -1;
           if (isIframeBlocked) {
-            return { ok: false, fallbackOtp: true, reason: msg };
+            return { ok: false, isIframeBlocked: true, reason: msg };
           }
-          return { ok: false, fallbackOtp: false, reason: msg || 'Passkey verification cancelled' };
+          return { ok: false, isIframeBlocked: false, reason: msg || 'Passkey verification cancelled' };
         });
       }
 
@@ -2430,17 +2538,15 @@
         var msg = String(err && (err.message || err.name) || '');
         var isIframeBlocked = (window.self !== window.top) || (err && (err.name === 'SecurityError' || err.name === 'NotSupportedError' || err.name === 'NotAllowedError')) || msg.indexOf('Permissions') !== -1 || msg.indexOf('publickey-credentials') !== -1;
         if (isIframeBlocked) {
-          return { ok: false, fallbackOtp: true, reason: msg };
+          return { ok: false, isIframeBlocked: true, reason: msg };
         }
-        return { ok: false, fallbackOtp: false, reason: msg || 'Passkey registration cancelled' };
+        return { ok: false, isIframeBlocked: false, reason: msg || 'Passkey registration cancelled' };
       });
     }
 
     function executePasskeyAdminLogin() {
       var errBox = document.getElementById('passkeyErrorBox');
-      var otpBox = document.getElementById('otpFallbackBox');
       errBox.classList.add('hidden');
-      otpBox.classList.add('hidden');
       var emailInput = document.getElementById('inputAdminEmail').value.trim().toLowerCase();
 
       if (!isStandaloneDemoEnv()) {
@@ -2457,8 +2563,10 @@
             return;
           }
 
-          performWebAuthnPasskey(res.email, res.credentialId || '').then(function(pkRes) {
+          var storedCred = (res.credentialId && res.credentialId.indexOf('google-passkey-') !== 0) ? res.credentialId : '';
+          performWebAuthnPasskey(res.email, storedCred).then(function(pkRes) {
             if (pkRes.ok) {
+              saveDevicePasskey(res.email, res.roomNumber, pkRes.credentialId);
               if (pkRes.mode === 'create') {
                 google.script.run.withSuccessHandler(function() {
                   finalizeAdminLogin(res.roomNumber, res.email);
@@ -2477,6 +2585,19 @@
               return;
             }
 
+            // GAS埋め込みフレーム等でWebAuthnが制限されている場合は、Googleアカウント認証Popupの照合成功をもってデバイス保存＆即時入室
+            if (pkRes.isIframeBlocked) {
+              var fallbackCred = res.credentialId || ('google-passkey-' + res.roomNumber);
+              saveDevicePasskey(res.email, res.roomNumber, fallbackCred);
+              finalizeAdminLogin(res.roomNumber, res.email);
+              return;
+            }
+
+            /* ============================================================================
+             * [v2.1.0 コメントアウト保持]
+             * 災害場面ではワンタイムパスワード（OTP）のメール送受信に時間がかかるため無効化。
+             * 削除せずコメントとして保持します。
+             * ============================================================================
             if (pkRes.fallbackOtp) {
               pendingOtpAdminSession = { email: res.email, roomNumber: res.roomNumber };
               google.script.run.withSuccessHandler(function(otpRes) {
@@ -2491,6 +2612,7 @@
               }).sendAdminOtpEmail(res.email);
               return;
             }
+            ============================================================================ */
 
             writeAuditLog('ADMIN_PASSKEY_CANCELLED', res.email, res.roomNumber, pkRes.reason);
             errBox.innerText = '🚫 パスキー生体認証が完了しませんでした（' + pkRes.reason + '）。';
@@ -2510,9 +2632,13 @@
         return;
       }
 
-      finalizeAdminLogin(resolvedRoom, emailInput);
+      performWebAuthnPasskey(emailInput, '').then(function(pkRes) {
+        saveDevicePasskey(emailInput, resolvedRoom, pkRes.credentialId || ('google-passkey-' + resolvedRoom));
+        finalizeAdminLogin(resolvedRoom, emailInput);
+      });
     }
 
+    /* [v2.1.0 コメントアウト保持: ワンタイムパスワード検証関数]
     function executeOtpAdminVerify() {
       if (!pendingOtpAdminSession) return;
       var errBox = document.getElementById('passkeyErrorBox');
@@ -2533,6 +2659,7 @@
         }
       }).verifyAdminOtp(pendingOtpAdminSession.email, otpVal);
     }
+    */
 
     function finalizeAdminLogin(resolvedRoom, verifiedEmail) {
       var adminUser = state.users.find(function(u) { return String(u.roomNumber) === String(resolvedRoom); });
@@ -2789,6 +2916,7 @@
         document.getElementById('btnSwitchView').classList.add('hidden');
         document.getElementById('btnResidentPublicMap').classList.add('hidden');
         document.getElementById('btnLogout').classList.add('hidden');
+        renderSavedPasskeyDeviceHint();
         return;
       }
 

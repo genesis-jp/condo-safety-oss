@@ -3,7 +3,7 @@ created: 2026-11-07
 tags: [ai-generated, gemini-generated]
 ---
 
-# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition v2.0)
+# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition v2.1)
 
 **[🇯🇵 日本語版 README はこちら](./README.md)** ｜ **[📝 Changelog](./CHANGELOG.md)**
 
@@ -35,7 +35,7 @@ Try the system right now in your browser! You can switch between **English** and
 2. **Strong Defense Against Data Leakage (Private Drive DB, Default-Private Map & WebAuthn Passkey Auth)**
    - **Zero Public Folder Sharing**: Automatically creates an annual folder hierarchy (`My Drive > 安否確認システム > 2026年版`) inside the Board's Google Drive. **You do NOT need to share the Google Drive folder or Spreadsheet publicly with residents**, eliminating direct database exposure.
    - **Default-Private Public Map & Confidential Support Registry**: The resident-facing building map is **hidden by default** (`ALLOW_RESIDENT_PUBLIC_MAP: false`). Moreover, pre-registered **Support-Needed Units (`🤝`)** are strictly visible to Board Admins only and never exposed in resident views (v2.0).
-   - **WebAuthn Passkey + Email OTP Fallback**: Matches each board member's Google email 1-to-1 with their unit number and verifies identity via WebAuthn Passkey (Touch ID / Face ID / Windows Hello) or 6-digit email OTP fallback when embedded in GAS iframes.
+   - **Instant Device Passkey & Google Account Popup Auth (v2.1)**: Authenticates immediately via Face ID / Touch ID if a passkey is saved on the device, or opens the Google Account authentication popup when not yet saved (email OTP fallback is commented out to avoid delays during disasters).
 3. **Inclusive Hybrid Operation (Coexisting with Magnetic Door Tags, Equipment Issues & 2-Table A4 Report)**
    - Residents report **Safe at Home / Evacuated / Rescue Request**, plus an independent **Door Safety Tag Posted (`🚪`)** checkbox designed to **coexist with existing magnetic door-tag / safety placard methods** so safety can be confirmed reliably through both digital reporting and physical door checks, alongside **Entrance Door Jammed (`🔒`) / Other Damage (`⚠️`)** checkboxes.
    - Board members can enter proxy reports (`[代]`) and print a **1-page A4 report** featuring separate tables for **Emergency Rescue/Damage** and **Pre-Registered Support Units**.

@@ -399,9 +399,12 @@ function verifyAdminPasskeyAssertion(email, credentialId) {
   return { verified: verified };
 }
 
-/**
- * WebAuthn 非対応/iframe制限環境向けのワンタイム確認コード送信（5分間有効）
- */
+/* ============================================================================
+ * [v2.1.0 コメントアウト保持]
+ * 災害発生時はメール遅延やコード入力の手間が初動の妨げとなるため、
+ * ワンタイムパスワード（OTP）メール送信・検証は使用せずコメントとして保持します。
+ * 管理者認証はパスキー認証（保存済みデバイス生体認証 ／ 未保存時はGoogleアカウント認証Popup）のみで行います。
+ * ============================================================================
 function sendAdminOtpEmail(email) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   if (!cleanEmail) return { success: false, error: 'NO_EMAIL' };
@@ -427,9 +430,6 @@ function sendAdminOtpEmail(email) {
   }
 }
 
-/**
- * ワンタイム確認コードの検証
- */
 function verifyAdminOtp(email, otpInput) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const props = PropertiesService.getScriptProperties();
@@ -451,6 +451,7 @@ function verifyAdminOtp(email, otpInput) {
     return { verified: false, reason: 'OTP_PARSE_ERROR' };
   }
 }
+============================================================================ */
 
 /**
  * 安否回答の登録・上書き保存（住民自己申告 および 管理者による代行入力の両対応）
