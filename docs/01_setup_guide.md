@@ -120,15 +120,16 @@ var APP_CONFIG = {
            └── 📄 操作監査ログ_2026年度.csv (すべての操作・代行入力・リセット監査ログ)
 ```
 
-### 自動生成される5つのシート構成
+### 自動生成される6つのシート構成
 
 | シート名 | 用途・保存されるデータ |
 |---|---|
-| **`m_users`** | 全戸マスタ（`room_number`, `owner_name`, `primary_email`, `member_count`, `pin_code`, `is_admin`, `has_registered_email`） |
-| **`t_latest_status`** | 各部屋の最新安否ステータス（ダッシュボード表示用キャッシュ） |
+| **`m_users`** | 全戸マスタ（`room_number`, `owner_name`, `primary_email`, `member_count`, `pin_code`, `is_admin`, `has_registered_email`, `needs_support`, `support_note`） |
+| **`t_latest_status`** | 各部屋の最新安否ステータス（`is_door_tag`, `is_door_stuck`, `is_other_issue` 含む） |
 | **`t_safety_logs`** | 住民および管理者による安否報告の全履歴ログ（追記型） |
 | **`t_audit_logs`** | 管理者ログイン、モード切替、全件リセット等のセキュリティ監査ログ |
-| **`m_settings`** | システム設定値（`TERM_TITLE`, `TRAINING_MODE`, `SYSTEM_ANNOUNCEMENT`） |
+| **`m_settings`** | システム設定値（`TERM_TITLE`, `ADMIN_ROOMS`, `TRAINING_MODE`, `ALLOW_RESIDENT_PUBLIC_MAP` [初期値 `false`], `SYSTEM_ANNOUNCEMENT`） |
+| **`m_passkeys`** | 管理者ごとの WebAuthn パスキー Credential ID 登録テーブル（v2.0〜） |
 
 > 🔒 **Googleドライブの共有設定に関する重要なセキュリティ仕様**
 > Googleドライブ上の `安否確認システム` フォルダやスプレッドシートを、**住民向けに「リンクを知っている全員に共有」する必要はありません（非公開のままで動作します）**。

@@ -3,9 +3,9 @@ created: 2026-11-07
 tags: [ai-generated, gemini-generated]
 ---
 
-# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition)
+# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition v2.0)
 
-**[🇯🇵 日本語版 README はこちら](./README.md)**
+**[🇯🇵 日本語版 README はこちら](./README.md)** ｜ **[📝 Changelog](./CHANGELOG.md)**
 
 A **serverless, zero-cost real-time emergency safety & damage reporting web application** designed for Condominiums, Apartments, Homeowners Associations (HOAs), and Community Disaster Response Teams during earthquakes, typhoons, power outages, or safety drills.
 
@@ -21,10 +21,10 @@ Try the system right now in your browser! You can switch between **English** and
 - 🇯🇵 **Japanese Live Demo**: `https://genesis-jp.github.io/condo-safety-oss/?lang=ja`
 
 > 💡 **Quick Demo Showcase Bar**
-> Click the buttons in the purple demo bar at the top of the page to test every feature with one click:
-> - **"🏠 Resident Report (Unit 305)"**: Submit a safety & damage checklist using a unit number + 4-digit PIN.
-> - **"🚨 Rescue Alert View (Unit 202)"**: Inspect a flashing red rescue alert with injury/water leak details.
-> - **"🔑 Try Board Admin Mode"**: Unlock full unit details, CSV export, Drill/Emergency mode toggle, and bulk reset.
+> Click the buttons in the top demo bar to test every feature with one click:
+> - **"🔐 Try Admin Dashboard (Unit 401)"**: Unlock full unit details, pre-registered support flags, 1-page A4 print preview, Drill/Emergency toggle, and bulk reset.
+> - **"🏠 Try Resident Report (Unit 305)"**: Test "Safe at Home / Evacuated / Rescue Request", independent "Door Tag Posted", and "Door Jammed / Other Damage".
+> - **"🧪 Load Sample Drill Data"** / **"🖨️ A4 Printable Report"**: Populate realistic drill data and preview the 1-page A4 triage report.
 
 ---
 
@@ -32,16 +32,15 @@ Try the system right now in your browser! You can switch between **English** and
 
 1. **100% Free & Serverless ($0/month)**
    - Runs entirely on a single shared Google Account (`@gmail.com`) belonging to your Condo Board or HOA using Google Apps Script, Google Sheets, and Google Drive.
-2. **Privacy by Design: No Resident Names or Contact Details Stored**
-   - Residents sign in with just their unit number and a simple PIN, and the board notifies them by email or LINE when a disaster strikes. The system does not store residents' names, phone numbers, or email addresses, which keeps the risk of a resident-directory leak to a minimum.
-   - *Note: The safety and injury status of each unit, and the Google addresses board members use to sign in, are stored. Keep the spreadsheet private and do not share it with residents.*
-3. **Instant Bilingual UI (`🌐 English / 日本語`)**
+2. **Strong Defense Against Data Leakage (Private Drive DB, Default-Private Map & WebAuthn Passkey Auth)**
+   - **Zero Public Folder Sharing**: Automatically creates an annual folder hierarchy (`My Drive > 安否確認システム > 2026年版`) inside the Board's Google Drive. **You do NOT need to share the Google Drive folder or Spreadsheet publicly with residents**, eliminating direct database exposure.
+   - **Default-Private Public Map & Confidential Support Registry**: The resident-facing building map is **hidden by default** (`ALLOW_RESIDENT_PUBLIC_MAP: false`). Moreover, pre-registered **Support-Needed Units (`🤝`)** are strictly visible to Board Admins only and never exposed in resident views (v2.0).
+   - **WebAuthn Passkey + Email OTP Fallback**: Matches each board member's Google email 1-to-1 with their unit number and verifies identity via WebAuthn Passkey (Touch ID / Face ID / Windows Hello) or 6-digit email OTP fallback when embedded in GAS iframes.
+3. **Inclusive Hybrid Operation (Independent Door Tag, Equipment Issues & 2-Table A4 Report)**
+   - Residents report **Safe at Home / Evacuated / Rescue Request**, plus an independent **Door Safety Tag Posted (`🚪`)** checkbox and **Entrance Door Jammed (`🔒`) / Other Damage (`⚠️`)** checkboxes.
+   - Board members can enter proxy reports (`[代]`) and print a **1-page A4 report** featuring separate tables for **Emergency Rescue/Damage** and **Pre-Registered Support Units**.
+4. **Instant Bilingual UI (`🌐 English / 日本語`)**
    - One-click toggle between English and Japanese (or via URL parameter `?lang=en` / `?lang=ja`), covering all status badges, modals, checklists, and CSV exports—ideal for international communities and multicultural buildings.
-4. **Two-Tier Security (Resident PIN + Board Admin 1-to-1 Passkey Auth)**
-   - **Residents**: Report safety in 10 seconds from any smartphone using their **Unit Number + 4-digit household PIN**. Sensitive details (injury, trapped, water leak notes) of other households remain masked to protect privacy.
-   - **Board / HOA Admins**: Authenticate via Google Sign-In (supporting fingerprint/face Passkeys) with **strict 1-to-1 verification** matching their personal Google email to their assigned unit number. Every admin action is recorded in an immutable audit log.
-5. **Private & Automated Annual Google Drive Organization**
-   - Automatically creates a structured folder hierarchy (`My Drive > 安否確認システム (Safety System) > 2026年版 (2026 Edition)`) inside the Board's Google Drive to store the database spreadsheet and CSV audit logs. **You do NOT need to share the Google Drive folder publicly with residents.**
 
 ---
 
@@ -53,6 +52,7 @@ Detailed operational guides are available in the [`docs/`](./docs/) directory:
 - **[🔐 02. Google Groups & Passkey Admin Guide (`docs/02_google_groups.md`)](./docs/02_google_groups.md)** — Creating the board Google Group, member management, and 1-to-1 Passkey admin binding.
 - **[🔄 03. Annual Handover Manual (`docs/03_annual_handover.md`)](./docs/03_annual_handover.md)** — Fiscal year URL rotation, data archiving, and board member transition checklist.
 - **[🚨 04. Safety Drill & Emergency Operation Guide (`docs/04_drill_operation.md`)](./docs/04_drill_operation.md)** — Drill day workflow, admin proxy reporting (`[代]`), and 1-page A4 report printing/PDF export.
+- **[📝 Changelog (`CHANGELOG.md`)](./CHANGELOG.md)** — Version history from v1.0.0 to v2.0.0.
 
 ---
 

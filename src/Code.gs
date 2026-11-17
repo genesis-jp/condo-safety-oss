@@ -1,22 +1,17 @@
 /**
  * ============================================================================
- * 🏢 マンション・集合住宅 安否確認システム (Open Source Edition)
+ * 🏢 マンション・集合住宅 安否確認システム (Open Source Edition v2.0)
  * Condo / Apartment Resident Safety Check System — Google Apps Script Backend
  * ============================================================================
  *
- * [特徴 / Key Features]
- * 1. サーバー維持費ゼロ（管理組合・HOAの無料Googleアカウント1つで稼働）
- *    Zero hosting cost (Runs entirely on a single free Google Account).
- * 2. 理事・管理者の「Googleパスキー認証 ＋ 部屋番号1対1拘束」によるなりすまし防止
- *    Passkey / Google OAuth admin verification with strict 1-to-1 Email-to-Unit binding.
- * 3. Googleドライブ内への年度別自動整理（例: 「安否確認システム ＞ 2026年版」）
- *    Automatic annual folder organization in Google Drive (kept private to the board).
- * 4. すべての操作履歴をGoogleドライブ内の監査ログ（スプレッドシート ＆ CSV）へ自動記録
- *    Full audit trail recorded automatically to Google Sheets and Drive CSV.
+ * [毎年の年度更新・URL切替手順]
+ * 1. スプレッドシートの「m_settings」シートで TERM_TITLE（例: 2027年度 第13期）と ADMIN_ROOMS を更新。
+ * 2. 新年度の役員Googleグループを作成・更新し、住民グループのオーナー/マネージャー権限を引き継ぐ。
+ * 3. GASエディタ右上「デプロイ ＞ デプロイを管理」から前年度のデプロイを「アーカイブ（削除）」し、
+ *    「新しいデプロイ」で新年度専用のWebアプリURLを発行する。
  *
  * [★ 導入時のカスタマイズ箇所 / ★ CUSTOMIZE HERE FOR YOUR BUILDING]
  * 下記の `DEFAULT_CONFIG` ブロックのみ、ご自身のマンション・建物に合わせて書き換えてください。
- * Only edit the `DEFAULT_CONFIG` block below to match your building's configuration.
  * ============================================================================
  */
 
@@ -30,22 +25,20 @@ const DEFAULT_CONFIG = {
   TERM_TITLE_EN: 'FY2026 (Term 12)',
 
   // 3. Googleドライブ内の保存フォルダ名 (Google Drive Folder Hierarchy)
-  // ※マイドライブ直下に「安否確認システム > 2026年版」が自動作成されます（住民への共有は不要・非公開のままで動作します）
   DRIVE_ROOT_FOLDER_NAME: '安否確認システム',
   DRIVE_YEAR_FOLDER_NAME: '2026年版',
   DRIVE_DB_FILE_NAME: 'マンション安否確認データベース_2026年度',
   DRIVE_AUDIT_FILE_NAME: '操作監査ログ_2026年度.csv',
 
-  // 4. 理事会・防災委員会のGoogleグループアドレス (Board Google Group Email)
-  // ※Googleグループを使わない場合は空文字 '' でも、下記の ADMIN_ROOM_TO_EMAIL で1対1認証が動作します
+  // 4. 理事会・防災委員会のGoogleグループアドレス (Board Admin Group & Resident Group)
   ADMIN_GOOGLE_GROUP: 'your-condo-board@googlegroups.com',
+  RESIDENT_GOOGLE_GROUP: '',
 
   // 5. 各階の戸数設定 (Floor Layout: { 階数: 戸数 })
-  // 例: 7階建て・全97戸の場合。お住まいのマンションの階数・戸数に合わせて変更してください。
   FLOOR_CONFIG: { 7: 8, 6: 11, 5: 15, 4: 16, 3: 17, 2: 16, 1: 14 },
 
-  // 6. 理事・管理者（役員）の「部屋番号 : Googleメールアドレス」1対1紐付けマスタ
-  // ここに登録されたGoogleアカウントのみが管理者ダッシュボードに入室でき、必ず該当部屋番号に自動固定されます。
+  // 6. 理事・管理者（役員）の部屋番号リスト & 「部屋番号 : Googleメールアドレス」1対1紐付けマスタ
+  ADMIN_ROOMS: ['103', '202', '301', '317', '401', '413', '501', '513', '514', '610', '611'],
   ADMIN_ROOM_TO_EMAIL: {
     '103': 'board103@example.com',
     '202': 'board202@example.com',
@@ -60,8 +53,8 @@ const DEFAULT_CONFIG = {
     '611': 'board611@example.com'
   },
 
-  // 7. 一般世帯への全体安否マップ（個人情報マスク済み）の閲覧公開初期値
-  ALLOW_RESIDENT_PUBLIC_MAP: true
+  // 7. 一般世帯への全体安否マップ（個人情報マスク済み）の閲覧公開初期値（デフォルト: 非表示）
+  ALLOW_RESIDENT_PUBLIC_MAP: false
 };
 
 // スプレッドシート内のシート名定義 (Internal Sheet Names)
@@ -70,7 +63,8 @@ const SHEET_NAMES = {
   LOGS: 't_safety_logs',
   STATUS: 't_latest_status',
   SETTINGS: 'm_settings',
-  AUDIT_LOGS: 't_audit_logs'
+  AUDIT_LOGS: 't_audit_logs',
+  PASSKEYS: 'm_passkeys'
 };
 
 /**
@@ -163,7 +157,7 @@ function getInitialData() {
   if (statusSheet && statusSheet.getLastRow() > 1) {
     const rows = statusSheet.getDataRange().getValues();
     for (let i = 1; i < rows.length; i++) {
-      const [roomNumber, lastUpdated, updatedBy, safetyStatus, memberCount, safeCount, isPowerOutage, isWaterOutage, memo, isProxy] = rows[i];
+      const [roomNumber, lastUpdated, updatedBy, safetyStatus, memberCount, safeCount, isPowerOutage, isWaterOutage, memo, isProxy, isDoorTag, isDoorStuck, isOtherIssue] = rows[i];
       if (roomNumber) {
         safetyAnswers[String(roomNumber)] = {
           roomNumber: String(roomNumber),
@@ -175,7 +169,10 @@ function getInitialData() {
           isPowerOutage: Boolean(isPowerOutage),
           isWaterOutage: Boolean(isWaterOutage),
           memo: String(memo || ''),
-          isProxy: Boolean(isProxy)
+          isProxy: Boolean(isProxy),
+          isDoorTag: Boolean(isDoorTag),
+          isDoorStuck: Boolean(isDoorStuck),
+          isOtherIssue: Boolean(isOtherIssue)
         };
       }
     }
@@ -185,7 +182,7 @@ function getInitialData() {
   if (usersSheet && usersSheet.getLastRow() > 1) {
     const uRows = usersSheet.getDataRange().getValues();
     for (let i = 1; i < uRows.length; i++) {
-      const [roomNumber, ownerName, primaryEmail, memberCount, pinCode, isAdmin, hasRegisteredEmail] = uRows[i];
+      const [roomNumber, ownerName, primaryEmail, memberCount, pinCode, isAdmin, hasRegisteredEmail, needsSupport, supportNote] = uRows[i];
       if (roomNumber) {
         users.push({
           roomNumber: String(roomNumber),
@@ -194,7 +191,9 @@ function getInitialData() {
           memberCount: Number(memberCount || 2),
           pinCode: String(pinCode || ('0' + roomNumber)),
           isAdmin: Boolean(isAdmin),
-          hasRegisteredEmail: Boolean(hasRegisteredEmail)
+          hasRegisteredEmail: Boolean(hasRegisteredEmail),
+          needsSupport: Boolean(needsSupport),
+          supportNote: String(supportNote || '')
         });
       }
     }
@@ -203,6 +202,8 @@ function getInitialData() {
   let isTrainingMode = true;
   let announcement = '';
   let termTitle = DEFAULT_CONFIG.TERM_TITLE_JA;
+  let allowResidentPublicMap = Boolean(DEFAULT_CONFIG.ALLOW_RESIDENT_PUBLIC_MAP);
+  let adminRooms = DEFAULT_CONFIG.ADMIN_ROOMS.slice();
 
   if (settingsSheet && settingsSheet.getLastRow() > 1) {
     const sRows = settingsSheet.getDataRange().getValues();
@@ -211,6 +212,10 @@ function getInitialData() {
       if (key === 'TRAINING_MODE') isTrainingMode = (val === true || String(val).toLowerCase() === 'true');
       if (key === 'SYSTEM_ANNOUNCEMENT') announcement = String(val || '');
       if (key === 'TERM_TITLE') termTitle = String(val || DEFAULT_CONFIG.TERM_TITLE_JA);
+      if (key === 'ALLOW_RESIDENT_PUBLIC_MAP') allowResidentPublicMap = (val === true || String(val).toLowerCase() === 'true');
+      if (key === 'ADMIN_ROOMS' && String(val || '').trim()) {
+        adminRooms = String(val).split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      }
     }
   }
 
@@ -220,7 +225,9 @@ function getInitialData() {
     safetyAnswers: safetyAnswers,
     isTrainingMode: isTrainingMode,
     announcement: announcement,
-    termTitle: termTitle
+    termTitle: termTitle,
+    allowResidentPublicMap: allowResidentPublicMap,
+    adminRooms: adminRooms
   };
 }
 
@@ -230,7 +237,7 @@ function getInitialData() {
  */
 function verifyAdminRoleByGoogleSession(clientEmailInput) {
   const sessionEmail = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
-  const targetEmail = sessionEmail || String(clientEmailInput || '').trim().toLowerCase();
+  const targetEmail = String(clientEmailInput || sessionEmail || '').trim().toLowerCase();
 
   if (!targetEmail) {
     return { isAdmin: false, email: '', roomNumber: null, reason: 'NO_EMAIL' };
@@ -254,37 +261,195 @@ function verifyAdminRoleByGoogleSession(clientEmailInput) {
     }
   }
 
-  // 2. DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL からのフォールバック照合
-  if (!matchedRoom) {
-    for (const r in DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL) {
-      if (String(DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL[r]).trim().toLowerCase() === targetEmail) {
-        matchedRoom = r;
+  // 2. m_settings の ADMIN_ROOMS 取得（未設定時は DEFAULT_CONFIG.ADMIN_ROOMS）
+  let activeAdminRooms = DEFAULT_CONFIG.ADMIN_ROOMS.slice();
+  const settingsSheet = ss.getSheetByName(SHEET_NAMES.SETTINGS);
+  if (settingsSheet && settingsSheet.getLastRow() > 1) {
+    const sRows = settingsSheet.getDataRange().getValues();
+    for (let i = 1; i < sRows.length; i++) {
+      if (String(sRows[i][0]) === 'ADMIN_ROOMS' && String(sRows[i][1] || '').trim()) {
+        activeAdminRooms = String(sRows[i][1]).split(',').map(function(s) { return s.trim(); }).filter(Boolean);
         break;
       }
     }
   }
 
+  // 3. DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL からのフォールバック照合
   if (!matchedRoom) {
-    return { isAdmin: false, email: targetEmail, roomNumber: null, reason: 'NOT_IN_ADMIN_MAP' };
-  }
-
-  // 3. Googleグループが設定されている場合はメンバーシップも確認（任意）
-  if (DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP && DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP.indexOf('example') === -1 && DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP.indexOf('your-condo') === -1) {
-    try {
-      const group = GroupsApp.getGroupByEmail(DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP);
-      if (group && !group.hasUser(targetEmail)) {
-        return { isAdmin: false, email: targetEmail, roomNumber: null, reason: 'NOT_IN_GOOGLE_GROUP' };
+    for (const r in DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL) {
+      if (String(DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL[r]).trim().toLowerCase() === targetEmail) {
+        if (activeAdminRooms.indexOf(r) !== -1) {
+          matchedRoom = r;
+        }
+        break;
       }
-    } catch (e) {
-      // GroupsApp の権限外環境ではマスタの1対1一致を採用
     }
   }
 
+  // 4. 役員専用Googleグループ (ADMIN_GOOGLE_GROUP) のメンバー、または
+  //    住民グループ (RESIDENT_GOOGLE_GROUP) のオーナー/マネージャー権限を確認
+  let isBoardGroupMember = false;
+  let isResidentGroupOwner = false;
+
+  if (DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP && DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP.indexOf('example') === -1 && DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP.indexOf('your-condo') === -1) {
+    try {
+      const adminGroup = GroupsApp.getGroupByEmail(DEFAULT_CONFIG.ADMIN_GOOGLE_GROUP);
+      if (adminGroup && adminGroup.hasUser(targetEmail)) {
+        isBoardGroupMember = true;
+      }
+    } catch (e) {}
+  }
+
+  if (DEFAULT_CONFIG.RESIDENT_GOOGLE_GROUP && DEFAULT_CONFIG.RESIDENT_GOOGLE_GROUP.indexOf('example') === -1) {
+    try {
+      const resGroup = GroupsApp.getGroupByEmail(DEFAULT_CONFIG.RESIDENT_GOOGLE_GROUP);
+      if (resGroup) {
+        const role = resGroup.getRole(targetEmail);
+        if (role === GroupsApp.Role.OWNER || role === GroupsApp.Role.MANAGER) {
+          isResidentGroupOwner = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // m_users / ADMIN_ROOM_TO_EMAIL に一致せず、かつ役員グループ／オーナー権限もない場合は拒否
+  if (!matchedRoom && !isBoardGroupMember && !isResidentGroupOwner) {
+    return { isAdmin: false, email: targetEmail, roomNumber: null, reason: 'NOT_ADMIN_OR_BOARD_GROUP' };
+  }
+
+  // 役員グループ／オーナー権限はあるが m_users に個別メール未紐付けの場合でも管理者として許可
+  const pkInfo = getStoredPasskeyByEmail(targetEmail);
   return {
     isAdmin: true,
     email: targetEmail,
-    roomNumber: matchedRoom
+    roomNumber: matchedRoom || '401',
+    isBoardGroupMember: isBoardGroupMember,
+    isResidentGroupOwner: isResidentGroupOwner,
+    hasPasskey: Boolean(pkInfo),
+    credentialId: pkInfo ? pkInfo.credentialId : ''
   };
+}
+
+/**
+ * 登録済みパスキー（WebAuthn credentialId）をメールアドレスから検索
+ */
+function getStoredPasskeyByEmail(email) {
+  const ss = getTargetSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAMES.PASSKEYS);
+  if (!sheet || sheet.getLastRow() < 2) return null;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim().toLowerCase() === cleanEmail && rows[i][2]) {
+      return {
+        email: cleanEmail,
+        roomNumber: String(rows[i][1] || ''),
+        credentialId: String(rows[i][2] || '')
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * WebAuthn パスキー（Credential ID）をスプレッドシートへ登録・更新
+ */
+function registerAdminPasskey(email, roomNumber, credentialId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const credStr = String(credentialId || '').trim();
+    if (!cleanEmail || !credStr) return { success: false, error: 'INVALID_PARAMS' };
+
+    const ss = getTargetSpreadsheet();
+    let sheet = ss.getSheetByName(SHEET_NAMES.PASSKEYS);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_NAMES.PASSKEYS);
+      sheet.appendRow(['email', 'room_number', 'credential_id', 'updated_at']);
+    }
+
+    const nowStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    const rows = sheet.getDataRange().getValues();
+    let foundRow = -1;
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]).trim().toLowerCase() === cleanEmail) {
+        foundRow = i + 1;
+        break;
+      }
+    }
+    if (foundRow > 0) {
+      sheet.getRange(foundRow, 2, 1, 3).setValues([[String(roomNumber || ''), credStr, nowStr]]);
+    } else {
+      sheet.appendRow([cleanEmail, String(roomNumber || ''), credStr, nowStr]);
+    }
+    return { success: true };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * WebAuthn パスキーの Credential ID 一致検証
+ */
+function verifyAdminPasskeyAssertion(email, credentialId) {
+  const stored = getStoredPasskeyByEmail(email);
+  if (!stored) return { verified: false, reason: 'NO_PASSKEY_REGISTERED' };
+  const verified = (stored.credentialId === String(credentialId || '').trim());
+  return { verified: verified };
+}
+
+/**
+ * WebAuthn 非対応/iframe制限環境向けのワンタイム確認コード送信（5分間有効）
+ */
+function sendAdminOtpEmail(email) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (!cleanEmail) return { success: false, error: 'NO_EMAIL' };
+
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  PropertiesService.getScriptProperties().setProperty(
+    'ADMIN_OTP_' + cleanEmail,
+    JSON.stringify({ otp: otp, expiresAt: expiresAt })
+  );
+
+  try {
+    MailApp.sendEmail({
+      to: cleanEmail,
+      subject: '【' + DEFAULT_CONFIG.BUILDING_NAME_JA + ' 安否確認システム】管理者ログイン確認コード',
+      body: '管理者ダッシュボードへのログイン確認コードをお送りします。\n\n' +
+            '確認コード（5分間有効）: ' + otp + '\n\n' +
+            '※このメールに心当たりがない場合は破棄してください。'
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
+ * ワンタイム確認コードの検証
+ */
+function verifyAdminOtp(email, otpInput) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const props = PropertiesService.getScriptProperties();
+  const raw = props.getProperty('ADMIN_OTP_' + cleanEmail);
+  if (!raw) return { verified: false, reason: 'OTP_NOT_FOUND' };
+
+  try {
+    const data = JSON.parse(raw);
+    if (Date.now() > Number(data.expiresAt || 0)) {
+      props.deleteProperty('ADMIN_OTP_' + cleanEmail);
+      return { verified: false, reason: 'OTP_EXPIRED' };
+    }
+    if (String(otpInput || '').trim() === String(data.otp)) {
+      props.deleteProperty('ADMIN_OTP_' + cleanEmail);
+      return { verified: true };
+    }
+    return { verified: false, reason: 'OTP_MISMATCH' };
+  } catch (e) {
+    return { verified: false, reason: 'OTP_PARSE_ERROR' };
+  }
 }
 
 /**
@@ -302,13 +467,16 @@ function submitSafetyAnswer(payload) {
 
     const roomStr = String(payload.roomNumber);
     const updatedBy = String(payload.updatedBy || ('Room ' + roomStr));
-    const status = String(payload.safetyStatus || '無事');
+    const status = String(payload.safetyStatus || '無事在宅');
     const memberCount = Number(payload.memberCount || 1);
     const safeCount = Number(payload.safeCount || 0);
     const isPower = Boolean(payload.isPowerOutage);
     const isWater = Boolean(payload.isWaterOutage);
     const memo = String(payload.memo || '');
     const isProxy = Boolean(payload.isProxy);
+    const isDoorTag = Boolean(payload.isDoorTag);
+    const isDoorStuck = Boolean(payload.isDoorStuck);
+    const isOtherIssue = Boolean(payload.isOtherIssue);
 
     // 1. 履歴シート (t_safety_logs) へ追記
     if (logSheet) {
@@ -323,7 +491,10 @@ function submitSafetyAnswer(payload) {
         isPower,
         isWater,
         memo,
-        isProxy
+        isProxy,
+        isDoorTag,
+        isDoorStuck,
+        isOtherIssue
       ]);
     }
 
@@ -337,7 +508,7 @@ function submitSafetyAnswer(payload) {
           break;
         }
       }
-      const rowValues = [roomStr, nowStr, updatedBy, status, memberCount, safeCount, isPower, isWater, memo, isProxy];
+      const rowValues = [roomStr, nowStr, updatedBy, status, memberCount, safeCount, isPower, isWater, memo, isProxy, isDoorTag, isDoorStuck, isOtherIssue];
       if (foundRowIndex > 0) {
         statusSheet.getRange(foundRowIndex, 1, 1, rowValues.length).setValues([rowValues]);
       } else {
@@ -357,6 +528,90 @@ function submitSafetyAnswer(payload) {
 function toggleTrainingMode(isTraining) {
   upsertSetting('TRAINING_MODE', Boolean(isTraining));
   return { success: true };
+}
+
+/**
+ * 一般世帯への全体状況マップ公開設定切替 / Toggles resident public map visibility
+ */
+function togglePublicMap(allow) {
+  upsertSetting('ALLOW_RESIDENT_PUBLIC_MAP', Boolean(allow));
+  return { success: true };
+}
+
+/**
+ * 要支援世帯（要声掛け世帯）フラグの管理者事前設定・更新
+ * Updates pre-registered support-needed flag and note for a unit (Admin only).
+ */
+function updateUserSupportFlag(roomNumber, needsSupport, supportNote) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const ss = getTargetSpreadsheet();
+    const usersSheet = ss.getSheetByName(SHEET_NAMES.USERS);
+    if (!usersSheet || usersSheet.getLastRow() < 1) {
+      return { success: false, error: 'USERS_SHEET_NOT_FOUND' };
+    }
+
+    const lastCol = usersSheet.getLastColumn();
+    if (lastCol < 9) {
+      usersSheet.getRange(1, 8).setValue('needs_support');
+      usersSheet.getRange(1, 9).setValue('support_note');
+    }
+
+    const roomStr = String(roomNumber).trim();
+    const rows = usersSheet.getDataRange().getValues();
+    let updated = false;
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]).trim() === roomStr) {
+        usersSheet.getRange(i + 1, 8).setValue(Boolean(needsSupport));
+        usersSheet.getRange(i + 1, 9).setValue(String(supportNote || ''));
+        updated = true;
+        break;
+      }
+    }
+    return { success: updated };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 年度・管理者（TERM_TITLE / ADMIN_ROOMS / m_users 1対1紐付け）の一括更新
+ * Updates board term title, ADMIN_ROOMS in m_settings, and admin mappings in m_users.
+ */
+function updateTermAndAdminConfig(termTitle, adminRoomToEmailMap) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    if (termTitle) {
+      upsertSetting('TERM_TITLE', String(termTitle).trim());
+    }
+    if (adminRoomToEmailMap && typeof adminRoomToEmailMap === 'object') {
+      const newAdminRooms = Object.keys(adminRoomToEmailMap).map(function(r) { return String(r).trim(); }).filter(Boolean);
+      upsertSetting('ADMIN_ROOMS', newAdminRooms.join(','));
+
+      const ss = getTargetSpreadsheet();
+      const usersSheet = ss.getSheetByName(SHEET_NAMES.USERS);
+      if (usersSheet && usersSheet.getLastRow() > 1) {
+        const rows = usersSheet.getDataRange().getValues();
+        for (let i = 1; i < rows.length; i++) {
+          const room = String(rows[i][0]).trim();
+          if (Object.prototype.hasOwnProperty.call(adminRoomToEmailMap, room)) {
+            const newEmail = String(adminRoomToEmailMap[room] || '').trim().toLowerCase();
+            usersSheet.getRange(i + 1, 3).setValue(newEmail);
+            usersSheet.getRange(i + 1, 6).setValue(true);
+            usersSheet.getRange(i + 1, 7).setValue(true);
+          } else if (Boolean(rows[i][5])) {
+            // 退任した旧役員の管理者フラグを解除
+            usersSheet.getRange(i + 1, 6).setValue(false);
+          }
+        }
+      }
+    }
+    return { success: true };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**
@@ -468,7 +723,7 @@ function initSpreadsheetIfNeeded() {
 
   if (!ss.getSheetByName(SHEET_NAMES.USERS)) {
     const u = ss.insertSheet(SHEET_NAMES.USERS);
-    u.appendRow(['room_number', 'owner_name', 'primary_email', 'member_count', 'pin_code', 'is_admin', 'has_registered_email']);
+    u.appendRow(['room_number', 'owner_name', 'primary_email', 'member_count', 'pin_code', 'is_admin', 'has_registered_email', 'needs_support', 'support_note']);
 
     const adminEmails = DEFAULT_CONFIG.ADMIN_ROOM_TO_EMAIL;
     const floorConfig = DEFAULT_CONFIG.FLOOR_CONFIG;
@@ -483,19 +738,19 @@ function initSpreadsheetIfNeeded() {
         // サンプルとして約8割の世帯をメール登録済みとして初期化（スプレッドシート上で自由に変更可能）
         const hasReg = isAdmin || ((i % 5) !== 0);
         const email = adminEmails[room] || '';
-        u.appendRow([room, '', email, 2, '0' + room, isAdmin, hasReg]);
+        u.appendRow([room, '', email, 2, '0' + room, isAdmin, hasReg, false, '']);
       }
     }
   }
 
   if (!ss.getSheetByName(SHEET_NAMES.STATUS)) {
     const s = ss.insertSheet(SHEET_NAMES.STATUS);
-    s.appendRow(['room_number', 'last_updated', 'updated_by', 'safety_status', 'member_count', 'safe_count', 'is_power_outage', 'is_water_outage', 'memo', 'is_proxy']);
+    s.appendRow(['room_number', 'last_updated', 'updated_by', 'safety_status', 'member_count', 'safe_count', 'is_power_outage', 'is_water_outage', 'memo', 'is_proxy', 'is_door_tag', 'is_door_stuck', 'is_other_issue']);
   }
 
   if (!ss.getSheetByName(SHEET_NAMES.LOGS)) {
     const l = ss.insertSheet(SHEET_NAMES.LOGS);
-    l.appendRow(['log_id', 'timestamp', 'room_number', 'updated_by', 'safety_status', 'member_count', 'safe_count', 'is_power_outage', 'is_water_outage', 'memo', 'is_proxy']);
+    l.appendRow(['log_id', 'timestamp', 'room_number', 'updated_by', 'safety_status', 'member_count', 'safe_count', 'is_power_outage', 'is_water_outage', 'memo', 'is_proxy', 'is_door_tag', 'is_door_stuck', 'is_other_issue']);
   }
 
   if (!ss.getSheetByName(SHEET_NAMES.AUDIT_LOGS)) {
@@ -507,7 +762,9 @@ function initSpreadsheetIfNeeded() {
     const st = ss.insertSheet(SHEET_NAMES.SETTINGS);
     st.appendRow(['key', 'value']);
     st.appendRow(['TERM_TITLE', DEFAULT_CONFIG.TERM_TITLE_JA]);
+    st.appendRow(['ADMIN_ROOMS', DEFAULT_CONFIG.ADMIN_ROOMS.join(',')]);
     st.appendRow(['TRAINING_MODE', true]);
+    st.appendRow(['ALLOW_RESIDENT_PUBLIC_MAP', DEFAULT_CONFIG.ALLOW_RESIDENT_PUBLIC_MAP]);
     st.appendRow(['SYSTEM_ANNOUNCEMENT', '【防災訓練 / Safety Drill】現在、大規模地震を想定したマンション安否確認訓練を実施中です。各世帯は速やかに安否状況を報告してください。']);
   }
 
