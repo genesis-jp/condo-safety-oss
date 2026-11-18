@@ -1254,7 +1254,7 @@
               <div class="report-map-header">
                 <span id="repMapBoxTitle">🏢 フロア別安否状況一覧マップ (全97戸)</span>
                 <span id="repMapLegend" style="font-size:6.5pt; font-weight:700; color:#475569;">
-                  【凡例】🟢無事在宅 🟣避難中 🆘救助要請 🟡未回答 ｜ 🚪掲出 🔒ドア不可 ⚠️その他 🤝要支援(***マスク) ✉青枠 👑橙枠 [代]
+                  【凡例】🟢無事在宅 🟣避難中 🆘救助要請 🟡未回答 ｜ 🚪掲出 🔒ドア不可 ⚠️その他 ✉青枠 👑橙枠 [代]
                 </span>
               </div>
               <div id="reportFloorMatrix" class="report-floor-matrix"></div>
@@ -1502,7 +1502,7 @@
         repKpiLbl4: '救助要請 / 要支援',
         repKpiLbl5: 'ライフライン異常',
         repKpiLifelineSub: '各戸申告・巡回確認計',
-        repMapLegend: '【凡例】🟢無事在宅 🟣避難中 🆘救助要請 🟡未回答 ｜ 🚪掲出 🔒ドア不可 ⚠️その他 🤝要支援(***マスク) ✉青枠 👑橙枠 [代]',
+        repMapLegend: '【凡例】🟢無事在宅 🟣避難中 🆘救助要請 🟡未回答 ｜ 🚪掲出 🔒ドア不可 ⚠️その他 ✉青枠 👑橙枠 [代]',
         repSupportPriorityLbl: '優先確認対象',
         repNotesTitle: '📣 対策本部 連絡事項・訓練記録メモ',
         repNotesEditHint: '(直接編集して印刷可能)',
@@ -1681,7 +1681,7 @@
         repKpiLbl4: 'Rescue / Support',
         repKpiLbl5: 'Utility Outages',
         repKpiLifelineSub: 'Resident & patrol reports',
-        repMapLegend: '[Legend] 🟢Safe Home 🟣Evac 🆘Rescue 🟡Pending | 🚪Tag 🔒Door ⚠️Other 🤝Support(***Masked) ✉Blue 👑Orange [P]',
+        repMapLegend: '[Legend] 🟢Safe Home 🟣Evac 🆘Rescue 🟡Pending | 🚪Tag 🔒Door ⚠️Other ✉Blue 👑Orange [P]',
         repSupportPriorityLbl: 'Priority Follow-up',
         repNotesTitle: '📣 Emergency HQ Notes & Drill Summary',
         repNotesEditHint: '(Editable before printing)',
@@ -3412,9 +3412,8 @@
           if (u.isAdmin) cell.className += ' is-admin';
           else if (u.hasRegisteredEmail) cell.className += ' has-email';
 
-          // [v2.1.12 プライバシー保護] 印刷・PDF出力時は事前登録要支援世帯のカラーチップおよび別票の部屋番号をマスキング
-          var dispRoom = u.needsSupport ? '***' : u.roomNumber;
-          var icon = (u.isAdmin ? '👑' : (u.hasRegisteredEmail ? '✉' : '')) + (u.needsSupport ? '🤝' : '');
+          // [v2.1.12 プライバシー保護] 印刷・PDF出力時はフロアマップ上で部屋番号を表示し、要支援(🤝)バッジのみ非表示にする
+          var icon = (u.isAdmin ? '👑' : (u.hasRegisteredEmail ? '✉' : ''));
           var pTag = (ans && ans.isProxy) ? (isEn ? '[P]' : '[代]') : '';
           var extraIcons = (ans && (ans.isDoorTag || rawSt === '玄関ドア安否掲出中') ? '🚪' : '') + (ans && ans.isDoorStuck ? '🔒' : '') + (ans && ans.isOtherIssue ? '⚠️' : '');
           var stShort = translateStatusLabel(status);
@@ -3423,7 +3422,7 @@
             : (stShort + ' ' + ans.safeCount + '/' + ans.memberCount + extraIcons + pTag);
 
           cell.innerHTML =
-            '<div>' + dispRoom + icon + '<\/div>' +
+            '<div>' + u.roomNumber + icon + '<\/div>' +
             '<div style="font-size:5.5pt; font-weight:700;">' + subText + '<\/div>';
           grid.appendChild(cell);
         });
@@ -3451,16 +3450,12 @@
           : '<table class="report-table" style="margin-bottom:6px;"><thead><tr><th style="width:48px;">部屋<\/th><th style="width:98px;">状態・異常<\/th><th style="width:46px;">在宅<\/th><th>状況メモ<\/th><\/tr><\/thead><tbody>';
         m.dangerList.forEach(function(item) {
           var isResc = (item.ans.safetyStatus === '救助要請' || item.ans.safetyStatus === '要支援');
-          var bothBadge = item.user.needsSupport ? (isEn ? ' 🤝Supp' : ' 🤝要支援') : '';
           var stuckBadge = item.ans.isDoorStuck ? (isEn ? ' 🔒Door' : ' 🔒ドア不可') : '';
           var otherBadge = item.ans.isOtherIssue ? (isEn ? ' ⚠️Other' : ' ⚠️その他') : '';
           var doorTagBadge = item.ans.isDoorTag ? ' 🚪' : '';
-          var dangerRoomLabel = item.user.needsSupport
-            ? (isEn ? '#***' : '***号室')
-            : (isEn ? ('#' + item.user.roomNumber) : (item.user.roomNumber + '号室'));
           html += '<tr>' +
-            '<td><strong>' + dangerRoomLabel + '<\/strong><\/td>' +
-            '<td style="color:' + (isResc ? '#dc2626' : '#7e22ce') + '; font-weight:800;">' + translateStatusLabel(item.ans.safetyStatus) + doorTagBadge + stuckBadge + otherBadge + bothBadge + '<\/td>' +
+            '<td><strong>' + (isEn ? ('#' + item.user.roomNumber) : (item.user.roomNumber + '号室')) + '<\/strong><\/td>' +
+            '<td style="color:' + (isResc ? '#dc2626' : '#7e22ce') + '; font-weight:800;">' + translateStatusLabel(item.ans.safetyStatus) + doorTagBadge + stuckBadge + otherBadge + '<\/td>' +
             '<td>' + item.ans.safeCount + '/' + item.ans.memberCount + '<\/td>' +
             '<td>' + (item.ans.memo || '-') + '<\/td>' +
           '<\/tr>';
