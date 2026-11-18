@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * 🏢 マンション・集合住宅 安否確認システム (Open Source Edition v2.0)
+ * 🏢 マンション・集合住宅 安否確認システム (Open Source Edition v2.2)
  * Condo / Apartment Resident Safety Check System — Google Apps Script Backend
  * ============================================================================
  *
