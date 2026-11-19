@@ -3,7 +3,7 @@ created: 2026-11-07
 tags: [ai-generated, gemini-generated]
 ---
 
-# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition v2.1)
+# 🏢 Condominium & Apartment Emergency Safety Check System (Open Source Edition v2.2)
 
 **[🇯🇵 日本語版 README はこちら](./README.md)** ｜ **[📝 Changelog](./CHANGELOG.md)**
 
@@ -34,11 +34,11 @@ Try the system right now in your browser! You can switch between **English** and
    - Runs entirely on a single shared Google Account (`@gmail.com`) belonging to your Condo Board or HOA using Google Apps Script, Google Sheets, and Google Drive.
 2. **Strong Defense Against Data Leakage (Private Drive DB, Default-Private Map & WebAuthn Passkey Auth)**
    - **Zero Public Folder Sharing**: Automatically creates an annual folder hierarchy (`My Drive > 安否確認システム > 2026年版`) inside the Board's Google Drive. **You do NOT need to share the Google Drive folder or Spreadsheet publicly with residents**, eliminating direct database exposure.
-   - **Default-Private Public Map & Confidential Support Registry**: The resident-facing building map is **hidden by default** (`ALLOW_RESIDENT_PUBLIC_MAP: false`). Moreover, pre-registered **Support-Needed Units (`🤝`)** are strictly visible to Board Admins only and never exposed in resident views (v2.0).
-   - **Instant Device Passkey & Google Account Popup Auth (v2.1)**: Authenticates immediately via Face ID / Touch ID if a passkey is saved on the device, or opens the Google Account authentication popup when not yet saved (email OTP fallback is commented out to avoid delays during disasters).
-3. **Inclusive Hybrid Operation (Coexisting with Magnetic Door Tags, Equipment Issues & 2-Table A4 Report)**
+   - **Default-Private Public Map & Print/PDF Privacy Masking for Support Registry (v2.2)**: The resident-facing building map is **hidden by default** (`ALLOW_RESIDENT_PUBLIC_MAP: false`), and pre-registered **Support-Needed Units (`🤝`)** are strictly visible to Board Admins only. When printing or saving the **1-page A4 report / PDF**, unit numbers on the floor map are displayed normally while the `🤝` badge is hidden on the map, and unit numbers in the bottom Pre-Registered Support table are automatically masked (`#***` / `***号室`) to protect resident privacy on printed sheets.
+   - **Instant Device Passkey & Google Account Popup Auth (v2.1–v2.2)**: Authenticates immediately via Face ID / Touch ID if a passkey is saved on the device, or opens the Google Account authentication popup when not yet saved (email OTP fallback is commented out to avoid delays during disasters).
+3. **Inclusive Hybrid Operation (Coexisting with Magnetic Door Tags, Registration/Safe-at-Home Rates & 2-Table A4 Report)**
    - Residents report **Safe at Home / Evacuated / Rescue Request**, plus an independent **Door Safety Tag Posted (`🚪`)** checkbox designed to **coexist with existing magnetic door-tag / safety placard methods** so safety can be confirmed reliably through both digital reporting and physical door checks, alongside **Entrance Door Jammed (`🔒`) / Other Damage (`⚠️`)** checkboxes.
-   - Board members can enter proxy reports (`[代]`) and print a **1-page A4 report** featuring separate tables for **Emergency Rescue/Damage** and **Pre-Registered Support Units**.
+   - Displays **Email Registration Rate (`%`)**, **Household Response Rate (`%`)**, and **Headcount-Based Safe-at-Home Rate (`%`)** on both the Admin Dashboard and the **1-page A4 report**, which features separate tables for **Emergency Rescue/Damage** and **Pre-Registered Support Units (Unit# Masked)**.
 4. **Instant Bilingual UI (`🌐 English / 日本語`)**
    - One-click toggle between English and Japanese (or via URL parameter `?lang=en` / `?lang=ja`), covering all status badges, modals, checklists, and CSV exports—ideal for international communities and multicultural buildings.
 
@@ -52,7 +52,7 @@ Detailed operational guides are available in the [`docs/`](./docs/) directory:
 - **[🔐 02. Google Groups & Passkey Admin Guide (`docs/02_google_groups.md`)](./docs/02_google_groups.md)** — Creating the board Google Group, member management, and 1-to-1 Passkey admin binding.
 - **[🔄 03. Annual Handover Manual (`docs/03_annual_handover.md`)](./docs/03_annual_handover.md)** — Fiscal year URL rotation, data archiving, and board member transition checklist.
 - **[🚨 04. Safety Drill & Emergency Operation Guide (`docs/04_drill_operation.md`)](./docs/04_drill_operation.md)** — Drill day workflow, admin proxy reporting (`[代]`), and 1-page A4 report printing/PDF export.
-- **[📝 Changelog (`CHANGELOG.md`)](./CHANGELOG.md)** — Version history from v1.0.0 to v2.0.0.
+- **[📝 Changelog (`CHANGELOG.md`)](./CHANGELOG.md)** — Version history from v1.0.0 to v2.2.
 
 ---
 
